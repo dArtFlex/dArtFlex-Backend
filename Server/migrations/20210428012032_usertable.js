@@ -3,9 +3,9 @@ exports.up = async function(knex, Promise) {
         .createTable('users', function(t) {
             t.increments('id').primary().notNullable()
             t.string('fullname').notNullable()
-            t.string('userid').notNullable()
-            t.string('email').notNullable()
-            t.string('wallet').notNullable()
+            t.string('userid').notNullable().unique()
+            t.string('email').notNullable().unique()
+            t.string('wallet').notNullable().unique()
             t.string('overview')
             t.string('profile_image')
             t.string('cover_image')
