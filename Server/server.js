@@ -1,5 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser')
+const cors = require('cors')
 const port = process.argv[2] || 8888
 const app = express()
 const swaggerUI = require('swagger-ui-express');
@@ -31,8 +32,9 @@ const specs = swaggerJsDoc(options);
 
 app.locals.root = secrets.images_root ? secrets.images_root : 'https://s3.amazonaws.com/dartflex/imgs/';
 
-app.use(express.static('public'))
-app.use(bodyParser.json())
+app.use(express.static('public'));
+app.use(bodyParser.json());
+app.use(cors());
 app.use('/api/image', RouterImage);
 app.use('/api/user', RouterUser);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
