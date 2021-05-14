@@ -1,6 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const fileupload = require('express-fileupload');
 const port = process.argv[2] || 8888
 const app = express()
 const swaggerUI = require('swagger-ui-express');
@@ -39,6 +40,7 @@ app.locals.root = secrets.images_root ? secrets.images_root : 'https://s3.amazon
 app.use(express.static('public'));
 app.use(bodyParser.json());
 app.use(cors());
+app.use(fileupload());
 app.use('/api/image', RouterImage);
 app.use('/api/user', RouterUser);
 app.use('/api/metadata', RouterMetadata);
