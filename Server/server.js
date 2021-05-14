@@ -20,6 +20,9 @@ const options = {
         },
         servers: [
             {
+                url: "http://3.11.202.153:8888"
+            },
+            {
                 url: "http://localhost:8888"
             }
         ]       
