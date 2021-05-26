@@ -11,6 +11,7 @@ var RouterImage = require('./src/router/Image');
 var RouterUser = require('./src/router/User');
 var RouterMetadata = require('./src/router/Metadata');
 var RouterLazyMint = require('./src/router/LazyMint');
+var RouterItem = require('./src/router/Item');
 
 const options = {
     definition: {
@@ -46,5 +47,6 @@ app.use('/api/image', RouterImage);
 app.use('/api/user', RouterUser);
 app.use('/api/metadata', RouterMetadata);
 app.use('/api/lazymint', RouterLazyMint);
+app.use('/api/item', RouterItem);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
 app.listen(port, () => console.log('Server running on', port));
