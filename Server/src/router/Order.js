@@ -3,13 +3,8 @@ var router = express.Router();
 
 const {
     getById,
-    getByTokenId,
-    getByOwner,
-    getByCreator,
-    getAll,
-    create,
-    update
-} = require('../controller/ItemController.js')
+    create
+} = require('../controller/OrderController.js')
 
 /**
  * @swagger
@@ -78,28 +73,8 @@ router.get('/get/:id', async(request, response) => {
     getById(request, response);
 });
 
-router.get('/get_by_token_id/:id', async(request, response) => {
-    getByTokenId(request, response);
-});
-
-router.get('/get_by_owner/:wallet', async(request, response) => {
-    getByOwner(request, response);
-});
-
-router.get('/get_by_creator/:wallet', async(request, response) => {
-    getByCreator(request, response);
-});
-
-router.get('/get_all', async(request, response) => {
-    getAll(request, response);
-})
-
 router.post('/create', async(request, response) => {
     create(request, response);
-});
-
-router.post('/update', async(request, response) => {
-    update(request, response);
 });
 
 module.exports = router;

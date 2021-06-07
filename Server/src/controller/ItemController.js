@@ -15,6 +15,17 @@ const getById = async (request, response) => {
   }
 }
 
+const getByTokenId = async (request, response) => {
+  const id = request.params.id
+  try{
+    const items = await knex('item').where("token_id", id).select("*")
+    response.status(HttpStatusCodes.ACCEPTED).send(items);
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get item by token Id, ${err}`);
+  }
+}
+
 const getByOwner = async (request, response) => {
   const owner = request.params.wallet
   try{
@@ -37,22 +48,32 @@ const getByCreator = async (request, response) => {
   }
 }
 
+const getAll = async (request, response) => {
+  try{
+    const items = await knex('item').select("*")
+    response.status(HttpStatusCodes.ACCEPTED).send(items);
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get all item, ${err}`);
+  }
+}
+
 const create = async (request, response) => {
-  const { contract, tokenId , uri , creator, owner, royalty, royaltyFee, lazymint, signatures } = request.body
+  const { contract, tokenId , uri , creator, owner, royalty, royaltyFee, lazymint, signature } = request.body
   if (!contract || !tokenId || !uri || !creator || !owner) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
   }
 
   const data = {
     contract, 
-    "tokenId" : tokenId,
+    "token_id" : tokenId,
     uri,
     creator,
     owner,
     royalty,
     'royalty_fee': royaltyFee,
     lazymint,
-    signatures,
+    signature,
   };
 
   try{
@@ -65,23 +86,23 @@ const create = async (request, response) => {
 }
 
 const update = async (request, response) => {
-  const { id, contract, tokenId , uri , creator, owner, royalty, royaltyFee, lazymint, signatures } = request.body
-  if (!id || !contract || !tokenId || !uri || !creator || !owner ) {
+  const { id, contract, tokenId , uri , creator, owner, royalty, royaltyFee, lazymint, signature } = request.body
+  if (!id, !contract || !tokenId || !uri || !creator || !owner ) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
   }
 
   const data = {
     contract, 
-    "tokenId" : tokenId,
+    "token_id" : tokenId,
     uri,
     creator,
     owner,
     royalty,
     'royalty_fee': royaltyFee,
     lazymint,
-    signatures,
+    signature,
   };
-
+  console.log(data);
   try{
     await knex('item').where('id', id).update(data);
     response.status(HttpStatusCodes.CREATED).send(`Data Updated Successfuly`);
@@ -93,8 +114,10 @@ const update = async (request, response) => {
 
 module.exports = {
   getById,
+  getByTokenId,
   getByOwner,
   getByCreator,
+  getAll,
   create,
   update
 }

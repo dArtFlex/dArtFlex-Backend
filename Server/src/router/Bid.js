@@ -3,13 +3,12 @@ var router = express.Router();
 
 const {
     getById,
-    getByTokenId,
-    getByOwner,
-    getByCreator,
-    getAll,
-    create,
-    update
-} = require('../controller/ItemController.js')
+    getByOrderId,
+    getByUserId,
+    listItem,
+    placeBid,
+    withdrawBid
+} = require('../controller/BidController.js')
 
 /**
  * @swagger
@@ -74,32 +73,29 @@ const {
  *               items:
  *                 $ref: '#/components/schemas/User'
  */
+
 router.get('/get/:id', async(request, response) => {
     getById(request, response);
 });
 
-router.get('/get_by_token_id/:id', async(request, response) => {
-    getByTokenId(request, response);
+router.get('/get_by_order/:id', async(request, response) => {
+    getByOrderId(request, response);
 });
 
-router.get('/get_by_owner/:wallet', async(request, response) => {
-    getByOwner(request, response);
+router.get('/get_by_user/:id', async(request, response) => {
+    getByUserId(request, response);
 });
 
-router.get('/get_by_creator/:wallet', async(request, response) => {
-    getByCreator(request, response);
+router.post('/list_item', async(request, response) => {
+    listItem(request, response);
 });
 
-router.get('/get_all', async(request, response) => {
-    getAll(request, response);
-})
-
-router.post('/create', async(request, response) => {
-    create(request, response);
+router.post('/place_bid', async(request, response) => {
+    placeBid(request, response);
 });
 
-router.post('/update', async(request, response) => {
-    update(request, response);
+router.post('/withdraw_bid', async(request, response) => {
+    withdrawBid(request, response);
 });
 
 module.exports = router;
