@@ -12,53 +12,70 @@ const {
  * @swagger
  * components: 
  *  schemas:
- *      User:
+ *      Metadata:
  *          type: object
  *          required:
  *              - id
- *              - fullname
- *              - userid
- *              - email
- *              - wallet
+ *              - name
+ *              - image
+ *              - image_data
+ *              - attribute
+ *              - description
  *          properties:
  *              id: 
  *                  type: integer
  *                  description: The id of the user
- *              fullname:
+ *              name:
  *                  type: string
- *                  description: The full name of the user
- *              userid:
+ *                  description: The name of the metadata
+ *              image:
  *                  type: string
- *                  description: The id of the user
- *              email:
+ *                  description: The image url
+ *              image_data:
  *                  type: string
- *                  description: The email address of the user
- *              wallet:
+ *                  description: The image data
+ *              attribute:
  *                  type: string
- *                  description: The wallet address of the user
- *              overview:
+ *                  description: Metadata attribute
+ *              description:
  *                  type: string
- *                  description: The overview of the user
- *              profile_image:
- *                  type: string
- *                  description: The url of the user profile image
- *              cover_image:
- *                  type: string
- *                  description: The url of the user cover image
+ *                  description: The description of metadata
  *          example:
  *              id: 1
- *              fullname: Harry Liu
- *              userid: harry1234
- *              email: harry@ideasoft.com
- *              wallet: "0x3D0b45BCEd34dE6402cE7b9e7e37bDd0Be9424F3"
- *              overview: "Hi, I am Harry Liu, a 3D artist."
- *              profile_image: "https://dartflex.s3.amazonaws.com/e33c005d090127ecc3be0920.jpeg"
- *              cover_image: "https://dartflex.s3.amazonaws.com/e33c005d090127ecc3be0920.jpeg"
+ *              name: "New Image"
+ *              image: "https://ipfs.infura.io/ipfs/QmPo2KmiNp3C1yNsMAL7ELJdvUupjme7XkE1MZJkx9Unp3"
+ *              image_data: "horse image"
+ *              attribute: "attribute"
+ *              description: "image destription"
  */
 
 /**
  * @swagger
- * /api/user/get/{id}:
+ * /api/metadata/get/{id}:
+ *   get:
+ *      summary: Get the metadata by id
+ *      parameters:
+ *          -   in: path
+ *              name: id
+ *              schema:
+ *                  type: integer
+ *              required: true
+ *              description: The metadata id
+ *      responses:
+ *           202:
+ *              description: The list of the metadata
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          $ref: '#/components/schemas/Metadata'
+ */
+router.get('/get/:id', async(request, response) => {
+    getDataById(request, response);
+});
+
+/**
+ * @swagger
+ * /api/metadata/delete/{id}:
  *   get:
  *      summary: Get the user by id
  *      parameters:
@@ -67,39 +84,15 @@ const {
  *              schema:
  *                  type: integer
  *              required: true
- *              description: The user id
+ *              description: The metadata id
  *      responses:
  *           202:
- *              description: The list of the users
- *              content:
- *                  application/json:
- *                      schema:
- *                          $ref: '#/components/schemas/User'
- */
-router.get('/get/:id', async(request, response) => {
-    getDataById(request, response);
-});
-
-/**
- * @swagger
- * /api/user/delete/{id}:
- *   get:
- *      summary: Get the user by wallet
- *      parameters:
- *          -   in: path
- *              name: id
- *              schema:
- *                  type: integer
- *              required: true
- *              description: The user id
- *      responses:
- *           202:
- *              description: User successfuly deleted
+ *              description: Metadata successfuly deleted
  *              content:
  *                  application/json:
  *                      schema:
  *                          type: string
- *                          example: "User Deleted Successfuly"
+ *                          example: "Data Deleted Successfuly"
  */
 router.get('/delete/:id', async(request, response) => {
     deleteData(request, response);
@@ -107,7 +100,7 @@ router.get('/delete/:id', async(request, response) => {
 
 /**
  * @swagger
- * /api/user/create:
+ * /api/metadata/create:
  *   post:
  *      summary: Create a new user
  *      requestBody:
@@ -117,58 +110,48 @@ router.get('/delete/:id', async(request, response) => {
  *                  schema:
  *                      type: object
  *                      required:
- *                          - fullname
- *                          - userid
- *                          - email
- *                          - wallet
+ *                          - name
+ *                          - image
+ *                          - image_data
+ *                          - attribute
+ *                          - description
  *                      properties:
- *                          id: 
- *                              type: integer
- *                              description: The id of the user
- *                          fullname:
+ *                          name:
  *                              type: string
- *                              description: The full name of the user
- *                          userid:
+ *                              description: The name of the metadata
+ *                          image:
  *                              type: string
- *                              description: The id of the user
- *                          email:
+ *                              description: The image url
+ *                          image_data:
  *                              type: string
- *                              description: The email address of the user
- *                          wallet:
+ *                              description: The image data
+ *                          attribute:
  *                              type: string
- *                              description: The wallet address of the user
- *                          overview:
+ *                              description: Metadata attribute
+ *                          description:
  *                              type: string
- *                              description: The overview of the user
- *                          profile_image:
- *                              type: string
- *                              description: The url of the user profile image
- *                          cover_image:
- *                              type: string
- *                              description: The url of the user cover image
+ *                              description: The description of metadata
  *                      example:
- *                          fullname: Harry Liu
- *                          userid: harry1234
- *                          email: harry@ideasoft.com
- *                          wallet: "0x3D0b45BCEd34dE6402cE7b9e7e37bDd0Be9424F3"
- *                          overview: "Hi, I am Harry Liu, a 3D artist."
- *                          profile_image: "https://dartflex.s3.amazonaws.com/e33c005d090127ecc3be0920.jpeg"
- *                          cover_image: "https://dartflex.s3.amazonaws.com/e33c005d090127ecc3be0920.jpeg"
+ *                          name: "New Image"
+ *                          image: "https://ipfs.infura.io/ipfs/QmPo2KmiNp3C1yNsMAL7ELJdvUupjme7XkE1MZJkx9Unp3"
+ *                          image_data: "horse image"
+ *                          attribute: "attribute"
+ *                          description: "image destription"
  *      responses:
  *           202:
- *              description: The user was Successfuly created.
+ *              description: The metadata was Successfuly created.
  *              content:
  *                  application/json:
  *                      schema:
  *                          type: string
- *                          example: "User Added Successfuly, id: 8"
+ *                          example: "Data Added Successfuly, id: 8"
  *           500:
  *              description: The user creation failed.
  *              content:
  *                  application/json:
  *                      schema:
  *                          type: string
- *                          example: 'Error Create User, error: insert into "users" ("cover_image", "email", "fullname", "overview", "profile_image", "userid", "wallet") values ($1, $2, $3, $4, $5, $6, $7) returning "id" - duplicate key value violates unique constraint "users_userid_unique"'
+ *                          example: 'Error Create Data, error: '
  */
 
 router.post('/create', async(request, response) => {
@@ -177,23 +160,23 @@ router.post('/create', async(request, response) => {
 
 /**
  * @swagger
- * /api/user/update:
+ * /api/metadata/update:
  *   post:
- *      summary: Update the user
+ *      summary: Update the metadata
  *      requestBody:
  *          required: true
  *          content:
  *              application/json:
  *                  schema:
- *                      $ref: '#/components/schemas/User'
+ *                      $ref: '#/components/schemas/Metadata'
  *      responses:
  *           202:
- *              description: The user was Successfuly update.
+ *              description: The Metadata was Successfuly update.
  *              content:
  *                  application/json:
  *                      schema:
  *                          type: string
- *                          example: "User updated Successfuly, id: 8"
+ *                          example: "Metadata updated Successfuly, id: 8"
  */
 router.post('/update/', async(request, response) => {
     updateData(request, response);

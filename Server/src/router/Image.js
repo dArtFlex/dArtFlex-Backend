@@ -3,6 +3,7 @@ var router = express.Router();
 const AWS = require('aws-sdk')
 const crypto = require('crypto')
 const request = require('request-promise')
+const {create} = require('ipfs-http-client');
 const { performance } = require('perf_hooks')
 
 const {save_results} = require('../controller/ImageController.js')
@@ -12,6 +13,9 @@ AWS.config.update(secrets.aws)
 const s3 = new AWS.S3()
 
 const randomString = (n) => crypto.randomBytes(n).toString('hex')
+const IPFS_HOST     = 'ipfs.infura.io'
+const IPFS_PORT     = 5001
+const IPFS_PROTOCOL = 'https'
 
 router.get('/i', async (req, res) => {
     const key = req.query.k
@@ -144,19 +148,23 @@ router.post('/random', async (req, res) => {
     }
 })
 
-router.post('/upload', function(req, res) {
-    const imageName = randomString(12);
-    s3.upload({
-        Bucket: 'dartflex',
-        Key: `${imageName}.jpeg`,
-        Body: req.files.file.data,
-        ACL: 'public-read',
-        ContentEncoding: 'base64',
-        ContentType: 'image/jpeg'
-    }, function(s3Err, data) {
-        if (s3Err) return res.sendStatus(500).send("error to upload image");
-        return res.send(`https://dartflex.s3.amazonaws.com/${imageName}.jpeg`);
-    });
+router.post('/upload', async function(req, res) {
+    const ipfsAPI = create({ host: IPFS_HOST, port: IPFS_PORT, protocol: IPFS_PROTOCOL });
+
+    
+    /** FileObject */
+    const files = [{
+        content:   req.files.file.data
+    }];
+
+    try {
+        const result = await ipfsAPI.add(files);
+        return res.send(`https://ipfs.infura.io/ipfs/${result.path}`);
+    } catch(err) {
+        return res.send(`${err}`);
+    }
+
+
 })
 
 module.exports = router;
