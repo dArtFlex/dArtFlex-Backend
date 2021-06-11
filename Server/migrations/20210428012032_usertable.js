@@ -9,6 +9,7 @@ exports.up = async function(knex, Promise) {
             t.string('overview')
             t.string('profile_image')
             t.string('cover_image')
+            // t.string('role')
             t.timestamp('created_at').defaultTo(knex.fn.now())
             t.timestamp('updated_at').defaultTo(knex.fn.now())
         })

@@ -17,13 +17,13 @@ const {
  *              - type
  *              - data
  *              - maker
- *              - makeAssetTypeClass
- *              - makeAssetTypeData
- *              - makeAssetValue
+ *              - make_asset_type_class
+ *              - make_asset_type_data
+ *              - make_asset_value
  *              - taker
- *              - takeAssetTypeClass
- *              - takeAssetTypeData
- *              - takeAssetValue
+ *              - take_asset_type_class
+ *              - take_asset_type_data
+ *              - take_asset_value
  *              - salt
  *              - start
  *              - end
@@ -41,25 +41,25 @@ const {
  *              maker:
  *                  type: string
  *                  description: The address of maker
- *              makeAssetTypeClass:
+ *              make_asset_type_class:
  *                  type: string
  *                  description: The maker asset type class
- *              makeAssetTypeData:
+ *              make_asset_type_data:
  *                  type: string
  *                  description: the maker asset type data
- *              makeAssetValue:
+ *              make_asset_value:
  *                  type: string
  *                  description: The maker asset value
  *              taker:
  *                  type: string
  *                  description: The address of taker
- *              takeAssetTypeClass:
+ *              take_asset_type_class:
  *                  type: string
  *                  description: The taker asset type class
- *              takeAssetTypeData:
+ *              take_asset_type_data:
  *                  type: string
  *                  description: The taker asset type data
- *              takeAssetValue:
+ *              take_asset_value:
  *                  type: string
  *                  description: The taker asset value
  *              salt:
@@ -77,13 +77,13 @@ const {
  *          example:
  *              id: 1
  *              maker: "0x3D0b45BCEd34dE6402cE7b9e7e37bDd0Be9424F3"
- *              makeAssetTypeClass: "0x73ad2146"
- *              makeAssetTypeData: "0x0000000000000000000000006ede7f3c26975aad32a475e1021d8f6f39c89d823d0b45bced34de6402ce7b9e7e37bdd0be9424f359afba1fd8adff66932e8932"
- *              makeAssetValue: "1"
+ *              make_asset_type_class: "0x73ad2146"
+ *              make_asset_type_data: "0x0000000000000000000000006ede7f3c26975aad32a475e1021d8f6f39c89d823d0b45bced34de6402ce7b9e7e37bdd0be9424f359afba1fd8adff66932e8932"
+ *              make_asset_value: "1"
  *              taker: "0x0000000000000000000000000000000000000000"
- *              takeAssetTypeClass: "0xaaaebeba"
- *              takeAssetTypeData: "0x"
- *              takeAssetValue: "10000000000000000"
+ *              take_asset_type_class: "0xaaaebeba"
+ *              take_asset_type_data: "0x"
+ *              take_asset_value: "10000000000000000"
  *              start: "0"
  *              end: "0"
  *              salt: "1140"
@@ -189,28 +189,35 @@ router.get('/get/:id', async(request, response) => {
  *                              type: string
  *                              description: the signature that 
  *                      example:
- *                          fullname: Harry Liu
- *                          userid: harry1234
- *                          email: harry@ideasoft.com
- *                          wallet: "0x3D0b45BCEd34dE6402cE7b9e7e37bDd0Be9424F3"
- *                          overview: "Hi, I am Harry Liu, a 3D artist."
- *                          profile_image: "https://dartflex.s3.amazonaws.com/e33c005d090127ecc3be0920.jpeg"
- *                          cover_image: "https://dartflex.s3.amazonaws.com/e33c005d090127ecc3be0920.jpeg"
+ *                          maker: "0x3D0b45BCEd34dE6402cE7b9e7e37bDd0Be9424F3"
+ *                          make_asset_type_class: "0x73ad2146"
+ *                          make_asset_type_data: "0x0000000000000000000000006ede7f3c26975aad32a475e1021d8f6f39c89d823d0b45bced34de6402ce7b9e7e37bdd0be9424f359afba1fd8adff66932e8932"
+ *                          make_asset_value: "1"
+ *                          taker: "0x0000000000000000000000000000000000000000"
+ *                          take_asset_type_class: "0xaaaebeba"
+ *                          take_asset_type_data: "0x"
+ *                          take_asset_value: "10000000000000000"
+ *                          start: "0"
+ *                          end: "0"
+ *                          salt: "1140"
+ *                          dataType: "0x4c234266"
+ *                          data: "0x0000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+ *                          signature: "0xbb75a794c2aa63522d6a3557eca0eaf492cb7a4e63c703abae1c63d5d1f7361b0bc01f15dbc21f244d1d83868c376a6e9b247c2584efc6c10631da97d431dc331c"
  *      responses:
  *           202:
- *              description: The user was Successfuly created.
+ *              description: The order was Successfuly created.
  *              content:
  *                  application/json:
  *                      schema:
  *                          type: string
- *                          example: "User Added Successfuly, id: 8"
+ *                          example: "Data Added Successfuly, id: 8"
  *           500:
- *              description: The user creation failed.
+ *              description: The order creation failed.
  *              content:
  *                  application/json:
  *                      schema:
  *                          type: string
- *                          example: 'Error Create User, error: insert into "users" ("cover_image", "email", "fullname", "overview", "profile_image", "userid", "wallet") values ($1, $2, $3, $4, $5, $6, $7) returning "id" - duplicate key value violates unique constraint "users_userid_unique"'
+ *                          example: 'Error Create order, error"'
  */
 
 router.post('/create', async(request, response) => {

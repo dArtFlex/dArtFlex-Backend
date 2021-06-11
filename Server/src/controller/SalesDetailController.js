@@ -21,13 +21,15 @@ const create = async (request, response) => {
   if(!(type == "auction" || type == "instant_buy")){
     return response.status(HttpStatusCodes.BAD_REQUEST).send(`invalid sales type`);
   }
-
-  if(endTime <= startTime){
-    return response.status(HttpStatusCodes.BAD_REQUEST).send(`expiratoin time is invalid`);
-  }
-
-  if(endPrice <= startPrice){
-    return response.status(HttpStatusCodes.BAD_REQUEST).send(`price invalid`);
+  if(type == "auction")
+  {
+    if(endTime <= startTime){
+      return response.status(HttpStatusCodes.BAD_REQUEST).send(`expiratoin time is invalid`);
+    }
+  
+    if(endPrice <= startPrice){
+      return response.status(HttpStatusCodes.BAD_REQUEST).send(`price invalid`);
+    }
   }
 
   const inputData = {
