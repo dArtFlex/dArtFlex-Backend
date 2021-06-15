@@ -30,6 +30,10 @@ const DOMAIN_TYPE = [
   }
 ];
 
+const signTypes = {
+	Sign: []
+};
+
 const ERC721Types = {
 	Part: [
 		{name: 'account', type: 'address'},
@@ -42,6 +46,7 @@ const ERC721Types = {
 		{name: 'royalties', type: 'Part[]'}
 	]
 };
+
 
 const orderTypes = {
 	AssetType: [
@@ -89,7 +94,7 @@ async function signTypedData(from, data) {
     }
       web3.currentProvider.sendAsync({
         jsonrpc: "2.0",
-        method: "eth_signTypedData_v3",
+        method: "eth_signTypedData_v4",
         params: [from, JSON.stringify(data)],
         id: new Date().getTime()
       }, cb);
@@ -190,24 +195,25 @@ function createOrder(maker, contract, tokenId, price) {
 
 const random = (min, max) => Math.floor(Math.random() * (max - min)) + min
 
-function enc(token, tokenId) {
+function enc(token, tokenId, uri, creatorAccount, creatorValue, royaltyAccount, royaltyValue, signature) {
 	if (tokenId) {
-		return web3.eth.abi.encodeParameters(["address", "uint256"], [token, tokenId]);
+		return web3.eth.abi.encodeParameters(["address", "uint256", "string", "tuple(address, uint256)[]", "tuple(address, uint256)[]", "bytes[]"], [token, tokenId, uri, [[creatorAccount, creatorValue]], [], [signature]]);
 	} else {
 		return web3.eth.abi.encodeParameter("address", token);
 	}
 }
 
 const encodeOrder = async (form) => {
-  const makeAssetData = form.make.assetType.tokenId ? enc(form.make.assetType.contract, form.make.assetType.tokenId) : "0x";
-  const takeAssetData = form.take.assetType.tokenId ? enc(form.take.assetType.contract, form.take.assetType.tokenId) : "0x";
+  const makeAssetData = form.make.assetType.tokenId ? enc(form.make.assetType.contract, form.make.assetType.tokenId, "/ipfs/QmWLsBu6nS4ovaHbGAXprD1qEssJu4r5taQfB74sCG51tp", form.maker, "10000", form.maker, "10000", "0x00b123c06b1d982e3a06a479b21c77ef7b245c7609647fc8960bb89e627939e161002683ecf03f53dc6cde192602720eac1e34cc0287f73144d75a6cea35de771b") : "0x";
+  const takeAssetData = form.take.assetType.tokenId ? enc(form.make.assetType.contract, form.make.assetType.tokenId, "/ipfs/QmWLsBu6nS4ovaHbGAXprD1qEssJu4r5taQfB74sCG51tp", form.maker, "10000", form.maker, "10000", "0x00b123c06b1d982e3a06a479b21c77ef7b245c7609647fc8960bb89e627939e161002683ecf03f53dc6cde192602720eac1e34cc0287f73144d75a6cea35de771b") : "0x";
   return {
 		data: web3.eth.abi.encodeParameters(['tuple(address, uint256)[]', 'tuple(address, uint256)[]'], [[], []]),
     dataType: "0x4c234266",
 		maker: form.maker,
 		makeAsset: {
 			"assetType": {
-				"assetClass": web3.utils.keccak256(form.make.assetType.assetClass).substring(0,10), 
+				// "assetClass": web3.utils.keccak256(form.make.assetType.assetClass).substring(0,10), 
+				"assetClass": "0xd8f960c1",
 				"data": makeAssetData
 			},
 			"value": form.make.value,
@@ -216,6 +222,7 @@ const encodeOrder = async (form) => {
 		takeAsset: {
 			"assetType": {
 				"assetClass": web3.utils.keccak256(form.take.assetType.assetClass).substring(0,10), 
+				// "assetClass": "0xd8f960c1",
 				"data": takeAssetData
 			},
 			"value": form.take.value,
@@ -227,8 +234,8 @@ const encodeOrder = async (form) => {
 }
 
 const encodeOrderBuyer = async (form, taker) => {
-	const makeAssetData = form.make.assetType.tokenId ? enc(form.make.assetType.contract, form.make.assetType.tokenId) : "0x";
-	const takeAssetData = form.take.assetType.tokenId ? enc(form.take.assetType.contract, form.take.assetType.tokenId) : "0x";
+	const makeAssetData = form.make.assetType.tokenId ? enc(form.make.assetType.contract, form.make.assetType.tokenId, "/ipfs/QmWLsBu6nS4ovaHbGAXprD1qEssJu4r5taQfB74sCG51tp", form.maker, "10000", form.maker, "10000", "0x00b123c06b1d982e3a06a479b21c77ef7b245c7609647fc8960bb89e627939e161002683ecf03f53dc6cde192602720eac1e34cc0287f73144d75a6cea35de771b") : "0x";
+	const takeAssetData = form.take.assetType.tokenId ? enc(form.make.assetType.contract, form.make.assetType.tokenId, "/ipfs/QmWLsBu6nS4ovaHbGAXprD1qEssJu4r5taQfB74sCG51tp", form.maker, "10000", form.maker, "10000", "0x00b123c06b1d982e3a06a479b21c77ef7b245c7609647fc8960bb89e627939e161002683ecf03f53dc6cde192602720eac1e34cc0287f73144d75a6cea35de771b") : "0x";
 	return {
 		data: web3.eth.abi.encodeParameters(['tuple(address, uint256)[]', 'tuple(address, uint256)[]'], [[], []]),
 	  	dataType: "0x4c234266",
@@ -236,6 +243,7 @@ const encodeOrderBuyer = async (form, taker) => {
 		makeAsset: {
 			"assetType": {
 				"assetClass": web3.utils.keccak256(form.take.assetType.assetClass).substring(0,10), 
+				// "assetClass": "0xd8f960c1",
 				"data": takeAssetData
 			},
 			"value": form.take.value,
@@ -243,7 +251,8 @@ const encodeOrderBuyer = async (form, taker) => {
 	  	taker: ZERO,
 		takeAsset: {
 			"assetType": {
-				"assetClass": web3.utils.keccak256(form.make.assetType.assetClass).substring(0,10), 
+				// "assetClass": web3.utils.keccak256(form.make.assetType.assetClass).substring(0,10), 
+				"assetClass": "0xd8f960c1",
 				"data": makeAssetData
 			},
 			"value": form.make.value,
@@ -253,11 +262,25 @@ const encodeOrderBuyer = async (form, taker) => {
 		salt: form.salt,
 	  }
   }
+async function prepareOrderMessage(order) {
+	const client = axios.create({
+		baseURL: "https://api-staging.rarible.com",
+	})
+	try{
+		const res = await client.post("/protocol/v0.1/ethereum/order/encoder/order", order)
+		return res.data
+	}
+	catch(err){
+		console.log(err);
+	}
+}
 
 const generateOrder = async (request, response) => {
   const { contract, tokenId , maker, taker, price } = request.body;
   const notSignedOrderForm = createOrder(maker, contract, tokenId, price);
   const order = await encodeOrder(notSignedOrderForm);
+//   const order = await prepareOrderMessage(notSignedOrderForm);
+//   console.log(order);
   const orderBuyer = await encodeOrderBuyer(notSignedOrderForm, taker)
   const data = createTypeData(
 		{
@@ -274,7 +297,27 @@ const generateOrder = async (request, response) => {
   return response.send([{ ...order, signature }, orderBuyer]);
 }
 
+const generateSignature = async (request, response) => {
+	const { creator } = request.body;
+	const data = createTypeData(
+		{
+			name: "sign",
+			version: "1",
+			chainId: 4,
+			verifyingContract: "0x1e1B6E13F0eB4C570628589e3c088BC92aD4dB45"
+		},
+		"Sign",
+		{},
+		signTypes
+	);
+  	const signature = await signTypedData(creator, data);
+	return response.send({
+		data: JSON.stringify(data),
+		signature: signature
+	})
+}
 module.exports = {
   generateLazyMint,
-  generateOrder
+  generateOrder,
+  generateSignature
 }

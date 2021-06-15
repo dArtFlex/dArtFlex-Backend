@@ -74,6 +74,7 @@ const create = async (request, response) => {
     'royalty_fee': royaltyFee,
     lazymint,
     signature,
+    "ban": false
   };
 
   try{

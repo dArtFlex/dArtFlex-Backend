@@ -15,6 +15,7 @@ var RouterItem = require('./src/router/Item');
 var RouterOrder = require('./src/router/Order');
 var RouterSalesDetail = require('./src/router/SalesDetail');
 var RouterBid = require('./src/router/Bid');
+var RouterSuperAdmin = require('./src/router/SuperAdmin');
 
 const options = {
     definition: {
@@ -54,5 +55,6 @@ app.use('/api/item', RouterItem);
 app.use('/api/order', RouterOrder);
 app.use('/api/sales_detail', RouterSalesDetail);
 app.use('/api/bid', RouterBid);
+app.use('/api/super_admin', RouterSuperAdmin);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
 app.listen(port, () => console.log('Server running on', port));

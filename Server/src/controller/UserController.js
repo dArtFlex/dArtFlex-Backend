@@ -81,7 +81,7 @@ const getUserById = async (request, response) => {
  */
 
 const createUser = async (request, response) => {
-  const { fullname, userid , email , wallet, overview, profile_image, cover_image } = request.body
+  const { fullname, userid , email , wallet, overview, profile_image, cover_image, website, twitter, instagram, discord, facebook, youtube, tiktok, otherUrl } = request.body
   if (!fullname || !userid || !email || !wallet) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
   }
@@ -93,6 +93,15 @@ const createUser = async (request, response) => {
     overview,
     profile_image,
     cover_image,
+    website,
+    twitter,
+    instagram,
+    discord,
+    facebook,
+    youtube,
+    tiktok,
+    'ban': false,
+    'other_url': otherUrl,
     'wallet' : wallet.toLowerCase(),
   }];
 
@@ -120,7 +129,7 @@ const createUser = async (request, response) => {
 
 const updateUser = async (request, response) => {
 
-  const { id, fullname, userid , email , wallet, overview, profile_image, cover_image } = request.body
+  const { id, fullname, userid , email , wallet, overview, profile_image, cover_image, website, twitter, instagram, discord, facebook, youtube, tiktok, otherUrl } = request.body
   if (!id || !fullname || !userid || !email || !wallet) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
   }
@@ -132,6 +141,14 @@ const updateUser = async (request, response) => {
     overview,
     profile_image,
     cover_image,
+    website,
+    twitter,
+    instagram,
+    discord,
+    facebook,
+    youtube,
+    tiktok,
+    'other_url': otherUrl,
     'wallet' : wallet.toLowerCase(),
   };
 
