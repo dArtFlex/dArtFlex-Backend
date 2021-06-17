@@ -3,11 +3,13 @@ var router = express.Router();
 
 const {
     getById,
-    getByOrderId,
+    getByMarketId,
     getByUserId,
     listItem,
     placeBid,
-    withdrawBid
+    withdrawBid,
+    acceptBid,
+    buyNow
 } = require('../controller/BidController.js')
 
 /**
@@ -78,8 +80,8 @@ router.get('/get/:id', async(request, response) => {
     getById(request, response);
 });
 
-router.get('/get_by_order/:id', async(request, response) => {
-    getByOrderId(request, response);
+router.get('/get_by_market/:id', async(request, response) => {
+    getByMarketId(request, response);
 });
 
 router.get('/get_by_user/:id', async(request, response) => {
@@ -98,4 +100,11 @@ router.post('/withdraw_bid', async(request, response) => {
     withdrawBid(request, response);
 });
 
+router.post('/accept_bid', async(request, response) => {
+    acceptBid(request, response);
+});
+
+router.post('/buy', async(request, response) => {
+    buyNow(request, response);
+});
 module.exports = router;

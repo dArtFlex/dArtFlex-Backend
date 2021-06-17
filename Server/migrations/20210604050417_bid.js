@@ -6,7 +6,7 @@ exports.up = function(knex, Promise) {
         t.string('item_id').notNullable()
         t.string('order_id').notNullable()
         t.string('user_id').notNullable()
-        t.string('sales_detail_id').notNullable()
+        t.string('market_id').notNullable()
         t.string('bid_amount').notNullable()
         t.string('status').notNullable()
         t.timestamp('created_at').defaultTo(knex.fn.now())

@@ -172,6 +172,19 @@ const deleteUser = async (request, response) => {
   };
 }
 
+const validateUserId = async (request, response) => {
+  const userId = request.body.userId;
+  try{
+    const result = await knex('users').where('userid', userId).select("*");
+    if(result.length == 0)
+      return response.status(HttpStatusCodes.ACCEPTED).send("ok");
+    return response.status(HttpStatusCodes.BAD_REQUEST).send("same name exist");
+  }
+  catch{
+      return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send("Error Validate");
+  };
+}
+
 module.exports = {
   getUsers,
   getUserById,
@@ -179,4 +192,5 @@ module.exports = {
   createUser,
   updateUser,
   deleteUser,
+  validateUserId
 }

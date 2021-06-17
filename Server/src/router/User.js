@@ -8,6 +8,7 @@ const {
     createUser,
     updateUser,
     deleteUser,
+    validateUserId
 } = require('../controller/UserController.js')
 
 /**
@@ -242,6 +243,10 @@ router.post('/create', async(request, response) => {
  */
 router.post('/update/', async(request, response) => {
     updateUser(request, response);
+});
+
+router.post('/validate', async(request, response) => {
+    validateUserId(request, response);
 });
 
 module.exports = router;

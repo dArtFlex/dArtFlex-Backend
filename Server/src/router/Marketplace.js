@@ -3,8 +3,10 @@ var router = express.Router();
 
 const {
     getById,
+    getByItemId,
+    getAll,
     create
-} = require('../controller/SalesDetailController.js')
+} = require('../controller/MarketplaceController.js')
 
 /**
  * @swagger
@@ -71,6 +73,14 @@ const {
  */
 router.get('/get/:id', async(request, response) => {
     getById(request, response);
+});
+
+router.get('/get_by_item/:id', async(request, response) => {
+    getByItemId(request, response);
+});
+
+router.get('/get_all', async(request, response) => {
+    getAll(request, response);
 });
 
 router.post('/create', async(request, response) => {

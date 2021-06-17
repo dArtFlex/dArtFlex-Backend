@@ -10,10 +10,10 @@ const secrets= require('./secrets.js')
 var RouterImage = require('./src/router/Image');
 var RouterUser = require('./src/router/User');
 var RouterMetadata = require('./src/router/Metadata');
-// var RouterLazyMint = require('./src/router/LazyMint');
+var RouterLazyMint = require('./src/router/LazyMint');
 var RouterItem = require('./src/router/Item');
 var RouterOrder = require('./src/router/Order');
-var RouterSalesDetail = require('./src/router/SalesDetail');
+var RouterMarketplace = require('./src/router/Marketplace');
 var RouterBid = require('./src/router/Bid');
 var RouterSuperAdmin = require('./src/router/SuperAdmin');
 
@@ -50,10 +50,10 @@ app.use(fileupload());
 app.use('/api/image', RouterImage);
 app.use('/api/user', RouterUser);
 app.use('/api/metadata', RouterMetadata);
-// app.use('/api/lazymint', RouterLazyMint);
+app.use('/api/lazymint', RouterLazyMint);
 app.use('/api/item', RouterItem);
 app.use('/api/order', RouterOrder);
-app.use('/api/sales_detail', RouterSalesDetail);
+app.use('/api/marketplace', RouterMarketplace);
 app.use('/api/bid', RouterBid);
 app.use('/api/super_admin', RouterSuperAdmin);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
