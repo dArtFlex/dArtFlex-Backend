@@ -217,7 +217,7 @@ function enc(form) {
 	return "0x";
 }
 
-const encodeOrder = async (form) => {
+const encodeOrder = async (form, taker) => {
 	
 	const makeAsset = form.make.assetType;
 	const takeAsset = form.take.assetType;
@@ -249,7 +249,7 @@ const encodeOrder = async (form) => {
 const generateOrder = async (request, response) => {
   const { contract, tokenId , uri, maker, taker, erc20, price, signature } = request.body;
   const notSignedOrderForm = createOrder(maker, contract, tokenId, uri, erc20, price, signature);
-  const order = await encodeOrder(notSignedOrderForm);
+  const order = await encodeOrder(notSignedOrderForm, taker);
   const data = createTypeData(
 		{
 			name: "Exchange",

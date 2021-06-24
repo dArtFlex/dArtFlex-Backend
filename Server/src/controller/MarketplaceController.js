@@ -29,7 +29,7 @@ const getByItemId = async (request, response) => {
 const getAll = async (request, response) => {
   try{
     const result = await knex('marketplace').select("*")
-    response.status(HttpStatusCodes.ACCEPTED).send(result);
+    return response.status(HttpStatusCodes.ACCEPTED).send(result);
   }
   catch(err) {
     return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get marketplace by Id, ${err}`);
