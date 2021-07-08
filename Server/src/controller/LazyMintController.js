@@ -104,6 +104,7 @@ async function signTypedData(from, data) {
       }, cb);
   }
   else{
+	console.log(web3.currentProvider);
     return signTypedData_v4(web3.currentProvider.wallets[from.toLowerCase()].privateKey, { data })
   }
   
@@ -224,21 +225,21 @@ const encodeOrder = async (form, taker) => {
   	return {
 		data: web3.eth.abi.encodeParameters(['tuple(address, uint256)[]', 'tuple(address, uint256)[]'], [[], []]),
     	dataType: "0x4c234266",
-		maker: form.maker,
+		maker: taker,
 		makeAsset: {
-			"assetType": {
-				"assetClass": web3.utils.keccak256(form.make.assetType.assetClass).substring(0,10), 
-				"data": enc(makeAsset)
-			},
-			"value": form.make.value,
-		},
-    	taker: ZERO,
-		takeAsset: {
 			"assetType": {
 				"assetClass": web3.utils.keccak256(form.take.assetType.assetClass).substring(0,10), 
 				"data": enc(takeAsset)
 			},
 			"value": form.take.value,
+		},
+    	taker: ZERO,
+		takeAsset: {
+			"assetType": {
+				"assetClass": web3.utils.keccak256(form.make.assetType.assetClass).substring(0,10), 
+				"data": enc(makeAsset)
+			},
+			"value": form.make.value,
 		},
 		start: 0,
     	end: 0,
@@ -262,7 +263,7 @@ const generateOrder = async (request, response) => {
 		orderTypes,
 	)
 	
-  const signatureOrder = await signTypedData(maker, data);
+  const signatureOrder = await signTypedData(taker, data);
   return response.send({ ...order, 'signature': signatureOrder });
 }
 

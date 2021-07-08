@@ -50,6 +50,14 @@ app.use(express.static('public'));
 app.use(bodyParser.json());
 app.use(cors());
 app.use(fileupload());
+
+app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    next();
+});
+
 app.use('/api/image', RouterImage);
 app.use('/api/user', RouterUser);
 app.use('/api/metadata', RouterMetadata);
