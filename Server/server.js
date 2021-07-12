@@ -48,8 +48,7 @@ app.locals.root = secrets.images_root ? secrets.images_root : 'https://s3.amazon
 
 app.use(express.static('public'));
 app.use(bodyParser.json());
-app.use(cors());
-app.options('*', cors())
+// app.use(cors());
 app.use(fileupload());
 
 app.use((req, res, next) => {
