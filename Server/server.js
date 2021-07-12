@@ -53,9 +53,9 @@ app.options('*', cors())
 app.use(fileupload());
 
 app.use((req, res, next) => {
-    res.set({"Access-Control-Allow-Origin" : "*", 
-             "Access-Control-Allow-Methods" : "HEAD, OPTIONS, GET, POST, PUT, PATCH, DELETE", 
-             "Access-Control-Allow-Headers" : "Content-Type, Authorization, X-Requested-With, Origin"})
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, PATCH");
+    res.header("Access-Control-Allow-Headers", "Accept, Content-Type, Authorization, X-Requested-With");
     next();
 });
 // app.use(cors({
