@@ -27,7 +27,7 @@ const getByTokenId = async (request, response) => {
 }
 
 const getByOwner = async (request, response) => {
-  const owner = request.params.wallet
+  const owner = request.params.id
   try{
     const items = await knex('item').where("owner", owner).select("*")
     response.status(HttpStatusCodes.ACCEPTED).send(items);
@@ -38,7 +38,7 @@ const getByOwner = async (request, response) => {
 }
 
 const getByCreator = async (request, response) => {
-  const creator = request.params.wallet
+  const creator = request.params.id
   try{
     const items = await knex('item').where("creator", creator).select("*")
     response.status(HttpStatusCodes.ACCEPTED).send(items);

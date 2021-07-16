@@ -12,6 +12,9 @@ const {
     burnItem
 } = require('../controller/SuperAdminController.js')
 
+
+
+
 router.post('/add_promotion', async(request, response) => {
     addPromotion(request, response);
 });

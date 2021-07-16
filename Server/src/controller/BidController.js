@@ -87,7 +87,6 @@ const placeBid = async (request, response) => {
     if(result[0].sold)
       return response.status(HttpStatusCodes.BAD_REQUEST).send("item is already sold");
     else{
-      // console.log(result[0]['start_price'], result[0]['end_price'], bidAmount)
       const startPrice = new BN(result[0]['start_price']);
       const endPrice = new BN(result[0]['end_price']);
       const _bidAmount = new BN(bidAmount);
@@ -96,7 +95,7 @@ const placeBid = async (request, response) => {
       if(!(result[0]['start_time'] <= getCurrentTime() && result[0]['end_time'] >= getCurrentTime()))
         return response.status(HttpStatusCodes.BAD_REQUEST).send("invliad bid time");
     }
-      
+    
     const data = {
       "item_id": itemId,
       "order_id": orderId,
@@ -113,8 +112,12 @@ const placeBid = async (request, response) => {
       const _bidAmount = new BN(bidAmount);
       if(_bidAmount.lte(_highestBid))
         return response.status(HttpStatusCodes.BAD_REQUEST).send(`Bid amount is less than highest bid`);
+      // Withdraw previous bidder
+      await knex('bid').where('id', highestBid[0]['id']).update({"status": "canceled"});
     }
     try{
+      
+      // Insert new bid
       const id = await knex('bid').insert(data).returning('id');
       response.status(HttpStatusCodes.CREATED).send(`Bid Placed Successfuly, id: ${id}`);
     }
@@ -149,7 +152,10 @@ const acceptBid = async (request, response) => {
 
   try{
     const marketId = await knex('bid').where('id', id).update({"status": "accepted"}).returning('market_id');
-    await knex('marketplace').where('id', parseInt(marketId)).update({"sold": true})
+    await knex('marketplace').where('id', parseInt(marketId)).update({"sold": true});
+    const buyer = await knex('bid').where('market_id', id).select("*");
+
+    await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id']});
     return response.status(HttpStatusCodes.CREATED).send(`accept bid successfuly`);
   }
   catch(err) {
