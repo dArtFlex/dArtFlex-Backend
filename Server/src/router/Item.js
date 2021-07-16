@@ -146,7 +146,7 @@ router.get('/get_by_token_id/:id', async(request, response) => {
  *               items:
  *                 $ref: '#/components/schemas/Item'
  */
-router.get('/get_by_owner/:wallet', async(request, response) => {
+router.get('/get_by_owner/:id', async(request, response) => {
     getByOwner(request, response);
 });
 
@@ -172,7 +172,7 @@ router.get('/get_by_owner/:wallet', async(request, response) => {
  *               items:
  *                 $ref: '#/components/schemas/Item'
  */
-router.get('/get_by_creator/:wallet', async(request, response) => {
+router.get('/get_by_creator/:id', async(request, response) => {
     getByCreator(request, response);
 });
 
