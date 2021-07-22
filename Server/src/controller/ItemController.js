@@ -82,7 +82,7 @@ const create = async (request, response) => {
     await knex('activity').insert({
       'from': 0,
       'to': creator,
-      'item_id': id,
+      'item_id': id[0],
       'market_id': 0,
       'bid_amount': 0,
       'sales_token_contract': "0x",
