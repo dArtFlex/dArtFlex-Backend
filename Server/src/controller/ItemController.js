@@ -79,6 +79,15 @@ const create = async (request, response) => {
 
   try{
     const id = await knex('item').insert(data).returning('id');
+    await knex('activity').insert({
+      'from': 0,
+      'to': creator,
+      'item_id': id,
+      'market_id': 0,
+      'bid_amount': 0,
+      'sales_token_contract': "0x",
+      'status': 'minted'
+    });
     response.status(HttpStatusCodes.CREATED).send(`Data Added Successfuly, id: ${id}`);
   }
   catch(err) {

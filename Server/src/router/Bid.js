@@ -218,7 +218,7 @@ router.post('/list_item', async(request, response) => {
  *                          bidAmount: 10000000000000000
  *      responses:
  *           202:
- *              description:Bid Placed Successfuly
+ *              description: Bid Placed Successfuly
  *              content:
  *                  application/json:
  *                      schema:

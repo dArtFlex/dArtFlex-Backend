@@ -13,6 +13,13 @@ const {
 } = require('../controller/SuperAdminController.js')
 
 
+/**
+ * @swagger
+ * components: 
+ *  schemas:
+ *      SuperAdmin:
+ */
+
 
 /**
  * @swagger
@@ -42,7 +49,7 @@ const {
  *                      example:
  *                          itemId: 1
  *                          data: "{\"types\":{\"EIP712Domain\":[{\"type\":\"string\",\"name\":\"name\"},{\"type\":\"string\",\"name\":\"version\"},{\"type\":\"uint256\",\"name\":\"chainId\"},{\"type\":\"address\",\"name\":\"verifyingContract\"}],\"Sign\":[]},\"domain\":{\"name\":\"sign\",\"version\":\"1\",\"chainId\":4,\"verifyingContract\":\"0x1e1B6E13F0eB4C570628589e3c088BC92aD4dB45\"},\"primaryType\":\"Sign\",\"message\":{}}"
- *                          signature:"0xfe36964439607f1cea33f00ae8aa71f00eee1f10ed22fcfbee4a32b6428baebf2ae33eea71b223bdffa78ab3b5103274dddb7286c1928326f89de30b7fc2e95f1c"
+ *                          signature: "0xfe36964439607f1cea33f00ae8aa71f00eee1f10ed22fcfbee4a32b6428baebf2ae33eea71b223bdffa78ab3b5103274dddb7286c1928326f89de30b7fc2e95f1c"
  *      responses:
  *           202:
  *              description : Item added to promotion Successfuly
@@ -50,10 +57,17 @@ const {
  *                  application/json:
  *                      schema:
  *                          type: object
- *                          example:{
- *                                     message: `Item added to promotion Successfuly`,
- *                                     id: 1
- *                                  }
+ *                          properties:
+ *                              message:
+ *                                  type: string
+ *                                  description: The message of the response
+ *                              id: 
+ *                                  type: integer
+ *                                  description: the Item id
+ *                          example:
+ *                              message: Item added to promotion Successfuly,
+ *                              id: 1
+ *                                  
  */
 router.post('/add_promotion', async(request, response) => {
     addPromotion(request, response);
@@ -87,15 +101,15 @@ router.post('/add_promotion', async(request, response) => {
  *                      example:
  *                          itemId: 1
  *                          data: "{\"types\":{\"EIP712Domain\":[{\"type\":\"string\",\"name\":\"name\"},{\"type\":\"string\",\"name\":\"version\"},{\"type\":\"uint256\",\"name\":\"chainId\"},{\"type\":\"address\",\"name\":\"verifyingContract\"}],\"Sign\":[]},\"domain\":{\"name\":\"sign\",\"version\":\"1\",\"chainId\":4,\"verifyingContract\":\"0x1e1B6E13F0eB4C570628589e3c088BC92aD4dB45\"},\"primaryType\":\"Sign\",\"message\":{}}"
- *                          signature:"0xfe36964439607f1cea33f00ae8aa71f00eee1f10ed22fcfbee4a32b6428baebf2ae33eea71b223bdffa78ab3b5103274dddb7286c1928326f89de30b7fc2e95f1c"
+ *                          signature: "0xfe36964439607f1cea33f00ae8aa71f00eee1f10ed22fcfbee4a32b6428baebf2ae33eea71b223bdffa78ab3b5103274dddb7286c1928326f89de30b7fc2e95f1c"
  *      responses:
  *           202:
  *              description : Item successfully removed from promotion table
  *              content:
  *                  application/json:
  *                      schema:
- *                          type: object
- *                          example:Item successfully removed from promotion table
+ *                          type: string
+ *                          example: 'Item successfully removed from promotion table'
  */
 router.post('/delete_promotion', async(request, response) => {
     deletePromotion(request, response);
@@ -129,7 +143,7 @@ router.post('/delete_promotion', async(request, response) => {
  *                      example:
  *                          userId: 1
  *                          data: "{\"types\":{\"EIP712Domain\":[{\"type\":\"string\",\"name\":\"name\"},{\"type\":\"string\",\"name\":\"version\"},{\"type\":\"uint256\",\"name\":\"chainId\"},{\"type\":\"address\",\"name\":\"verifyingContract\"}],\"Sign\":[]},\"domain\":{\"name\":\"sign\",\"version\":\"1\",\"chainId\":4,\"verifyingContract\":\"0x1e1B6E13F0eB4C570628589e3c088BC92aD4dB45\"},\"primaryType\":\"Sign\",\"message\":{}}"
- *                          signature:"0xfe36964439607f1cea33f00ae8aa71f00eee1f10ed22fcfbee4a32b6428baebf2ae33eea71b223bdffa78ab3b5103274dddb7286c1928326f89de30b7fc2e95f1c"
+ *                          signature: "0xfe36964439607f1cea33f00ae8aa71f00eee1f10ed22fcfbee4a32b6428baebf2ae33eea71b223bdffa78ab3b5103274dddb7286c1928326f89de30b7fc2e95f1c"
  *      responses:
  *           202:
  *              description : user ban successfully
@@ -137,7 +151,7 @@ router.post('/delete_promotion', async(request, response) => {
  *                  application/json:
  *                      schema:
  *                          type: string
- *                          example:User successfully banned
+ *                          example: 'User successfully banned'
  */
 
 router.post('/ban_user', async(request, response) => {
@@ -172,7 +186,7 @@ router.post('/ban_user', async(request, response) => {
  *                      example:
  *                          userId: 1
  *                          data: "{\"types\":{\"EIP712Domain\":[{\"type\":\"string\",\"name\":\"name\"},{\"type\":\"string\",\"name\":\"version\"},{\"type\":\"uint256\",\"name\":\"chainId\"},{\"type\":\"address\",\"name\":\"verifyingContract\"}],\"Sign\":[]},\"domain\":{\"name\":\"sign\",\"version\":\"1\",\"chainId\":4,\"verifyingContract\":\"0x1e1B6E13F0eB4C570628589e3c088BC92aD4dB45\"},\"primaryType\":\"Sign\",\"message\":{}}"
- *                          signature:"0xfe36964439607f1cea33f00ae8aa71f00eee1f10ed22fcfbee4a32b6428baebf2ae33eea71b223bdffa78ab3b5103274dddb7286c1928326f89de30b7fc2e95f1c"
+ *                          signature: "0xfe36964439607f1cea33f00ae8aa71f00eee1f10ed22fcfbee4a32b6428baebf2ae33eea71b223bdffa78ab3b5103274dddb7286c1928326f89de30b7fc2e95f1c"
  *      responses:
  *           202:
  *              description : user unban successfully
@@ -180,7 +194,7 @@ router.post('/ban_user', async(request, response) => {
  *                  application/json:
  *                      schema:
  *                          type: string
- *                          example:User successfully unbanned
+ *                          example: 'User successfully unbanned'
  */
 router.post('/unban_user', async(request, response) => {
     unBanUser(request, response);
@@ -214,7 +228,7 @@ router.post('/unban_user', async(request, response) => {
  *                      example:
  *                          itemId: 1
  *                          data: "{\"types\":{\"EIP712Domain\":[{\"type\":\"string\",\"name\":\"name\"},{\"type\":\"string\",\"name\":\"version\"},{\"type\":\"uint256\",\"name\":\"chainId\"},{\"type\":\"address\",\"name\":\"verifyingContract\"}],\"Sign\":[]},\"domain\":{\"name\":\"sign\",\"version\":\"1\",\"chainId\":4,\"verifyingContract\":\"0x1e1B6E13F0eB4C570628589e3c088BC92aD4dB45\"},\"primaryType\":\"Sign\",\"message\":{}}"
- *                          signature:"0xfe36964439607f1cea33f00ae8aa71f00eee1f10ed22fcfbee4a32b6428baebf2ae33eea71b223bdffa78ab3b5103274dddb7286c1928326f89de30b7fc2e95f1c"
+ *                          signature: "0xfe36964439607f1cea33f00ae8aa71f00eee1f10ed22fcfbee4a32b6428baebf2ae33eea71b223bdffa78ab3b5103274dddb7286c1928326f89de30b7fc2e95f1c"
  *      responses:
  *           202:
  *              description : item ban successfully
@@ -222,7 +236,7 @@ router.post('/unban_user', async(request, response) => {
  *                  application/json:
  *                      schema:
  *                          type: string
- *                          example:item successfully banned
+ *                          example: 'item successfully banned'
  */
 router.post('/ban_item', async(request, response) => {
     banItem(request, response);
@@ -256,7 +270,7 @@ router.post('/ban_item', async(request, response) => {
  *                      example:
  *                          itemId: 1
  *                          data: "{\"types\":{\"EIP712Domain\":[{\"type\":\"string\",\"name\":\"name\"},{\"type\":\"string\",\"name\":\"version\"},{\"type\":\"uint256\",\"name\":\"chainId\"},{\"type\":\"address\",\"name\":\"verifyingContract\"}],\"Sign\":[]},\"domain\":{\"name\":\"sign\",\"version\":\"1\",\"chainId\":4,\"verifyingContract\":\"0x1e1B6E13F0eB4C570628589e3c088BC92aD4dB45\"},\"primaryType\":\"Sign\",\"message\":{}}"
- *                          signature:"0xfe36964439607f1cea33f00ae8aa71f00eee1f10ed22fcfbee4a32b6428baebf2ae33eea71b223bdffa78ab3b5103274dddb7286c1928326f89de30b7fc2e95f1c"
+ *                          signature: "0xfe36964439607f1cea33f00ae8aa71f00eee1f10ed22fcfbee4a32b6428baebf2ae33eea71b223bdffa78ab3b5103274dddb7286c1928326f89de30b7fc2e95f1c"
  *      responses:
  *           202:
  *              description : item unban successfully
@@ -264,7 +278,7 @@ router.post('/ban_item', async(request, response) => {
  *                  application/json:
  *                      schema:
  *                          type: string
- *                          example:item successfully banned
+ *                          example: 'item successfully banned'
  */
 router.post('/unban_item', async(request, response) => {
     unBanItem(request, response);
@@ -298,7 +312,7 @@ router.post('/unban_item', async(request, response) => {
  *                      example:
  *                          userId: 1
  *                          data: "{\"types\":{\"EIP712Domain\":[{\"type\":\"string\",\"name\":\"name\"},{\"type\":\"string\",\"name\":\"version\"},{\"type\":\"uint256\",\"name\":\"chainId\"},{\"type\":\"address\",\"name\":\"verifyingContract\"}],\"Sign\":[]},\"domain\":{\"name\":\"sign\",\"version\":\"1\",\"chainId\":4,\"verifyingContract\":\"0x1e1B6E13F0eB4C570628589e3c088BC92aD4dB45\"},\"primaryType\":\"Sign\",\"message\":{}}"
- *                          signature:"0xfe36964439607f1cea33f00ae8aa71f00eee1f10ed22fcfbee4a32b6428baebf2ae33eea71b223bdffa78ab3b5103274dddb7286c1928326f89de30b7fc2e95f1c"
+ *                          signature: "0xfe36964439607f1cea33f00ae8aa71f00eee1f10ed22fcfbee4a32b6428baebf2ae33eea71b223bdffa78ab3b5103274dddb7286c1928326f89de30b7fc2e95f1c"
  *      responses:
  *           202:
  *              description : user burnt successfully
@@ -306,7 +320,7 @@ router.post('/unban_item', async(request, response) => {
  *                  application/json:
  *                      schema:
  *                          type: string
- *                          example:User successfully burnt
+ *                          example: 'User successfully burnt'
  */
 router.post('/burn_user', async(request, response) => {
     burnUser(request, response);
@@ -340,7 +354,7 @@ router.post('/burn_user', async(request, response) => {
  *                      example:
  *                          itemId: 1
  *                          data: "{\"types\":{\"EIP712Domain\":[{\"type\":\"string\",\"name\":\"name\"},{\"type\":\"string\",\"name\":\"version\"},{\"type\":\"uint256\",\"name\":\"chainId\"},{\"type\":\"address\",\"name\":\"verifyingContract\"}],\"Sign\":[]},\"domain\":{\"name\":\"sign\",\"version\":\"1\",\"chainId\":4,\"verifyingContract\":\"0x1e1B6E13F0eB4C570628589e3c088BC92aD4dB45\"},\"primaryType\":\"Sign\",\"message\":{}}"
- *                          signature:"0xfe36964439607f1cea33f00ae8aa71f00eee1f10ed22fcfbee4a32b6428baebf2ae33eea71b223bdffa78ab3b5103274dddb7286c1928326f89de30b7fc2e95f1c"
+ *                          signature: "0xfe36964439607f1cea33f00ae8aa71f00eee1f10ed22fcfbee4a32b6428baebf2ae33eea71b223bdffa78ab3b5103274dddb7286c1928326f89de30b7fc2e95f1c"
  *      responses:
  *           202:
  *              description : item burn successfully
@@ -348,7 +362,7 @@ router.post('/burn_user', async(request, response) => {
  *                  application/json:
  *                      schema:
  *                          type: string
- *                          example:item successfully burnt
+ *                          example: 'item successfully burnt'
  */
 router.post('/burn_item', async(request, response) => {
     burnItem(request, response);
