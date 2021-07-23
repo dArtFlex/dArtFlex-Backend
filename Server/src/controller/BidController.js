@@ -114,7 +114,7 @@ const placeBid = async (request, response) => {
       "status": "pending"
     };
 
-    const highestBid = await knex('bid').where("item_id", itemId).select('*').orderBy('bid_amount', 'DESC').limit(1);
+    const highestBid = await knex('bid').where("item_id", itemId).andWhereNot('status', 'pending').select('*').orderBy('bid_amount', 'DESC').limit(1);
     if(highestBid.length > 0)
     {
       const _highestBid = new BN(highestBid[0]['bid_amount']);
@@ -133,6 +133,7 @@ const placeBid = async (request, response) => {
         'to': 0,
         'item_id': itemId,
         'market_id': marketId,
+        'order_id': orderId,
         'bid_amount': bidAmount,
         'sales_token_contract': '0x',
         'status': 'bidded'
@@ -161,6 +162,7 @@ const withdrawBid = async (request, response) => {
       'to': 0,
       'item_id': data[0]['item_id'],
       'market_id': data[0]['market_id'],
+      'order_id': data[0]['orderId'],
       'bid_amount': data[0]['bid_amount'],
       'sales_token_contract': '0x',
       'status': 'canceled'
@@ -191,6 +193,7 @@ const acceptBid = async (request, response) => {
       'to': buyer[0]['user_id'],
       'item_id': data[0]['item_id'],
       'market_id': data[0]['market_id'],
+      'order_id': data[0]['orderId'],
       'bid_amount': data[0]['bid_amount'],
       'sales_token_contract': '0x',
       'status': 'sold'
@@ -201,6 +204,7 @@ const acceptBid = async (request, response) => {
       'to': seller[0]['owner'],
       'item_id': data[0]['item_id'],
       'market_id': data[0]['market_id'],
+      'order_id': data[0]['orderId'],
       'bid_amount': data[0]['bid_amount'],
       'sales_token_contract': '0x',
       'status': 'purchased'

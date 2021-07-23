@@ -84,6 +84,7 @@ const create = async (request, response) => {
       'to': creator,
       'item_id': id[0],
       'market_id': 0,
+      'order_id': 0,
       'bid_amount': 0,
       'sales_token_contract': "0x",
       'status': 'minted'

@@ -7,6 +7,7 @@ exports.up = function(knex, Promise) {
         t.string('to').notNullable()
         t.string('item_id').notNullable()
         t.string('market_id').notNullable()
+        t.string('order_id').notNullable()
         t.string('bid_amount').notNullable()
         t.string('sales_token_contract').notNullable()
         t.string('status').notNullable()
