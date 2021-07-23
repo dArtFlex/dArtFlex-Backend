@@ -7,6 +7,7 @@ var sigUtil = require('eth-sig-util')
 const addPromotion = async (request, response) => {
   const {itemId, data, signature} = request.body;
   const msgSender = sigUtil.recoverTypedSignature_v4({ data: JSON.parse(data), sig: signature })
+  console.log(itemId);
   try{
     const users = await knex('users').where("wallet", msgSender).select("*")
     if(users.length == 0)
@@ -17,9 +18,10 @@ const addPromotion = async (request, response) => {
 
     try{
       const promotions = await knex('promotion').where("item_id", itemId).select("*");
+      console.log(promotions);
       if(promotions.length == 0)
       {
-        const id = await knex('promotion').insert(user).returning('id');
+        const id = await knex('promotion').insert({'item_id' : itemId}).returning('id');
         return response.status(HttpStatusCodes.CREATED).send({
           message: `Item added to promotion Successfuly`,
           id: id
@@ -29,7 +31,7 @@ const addPromotion = async (request, response) => {
         return response.status(HttpStatusCodes.ACCEPTED).send(`Item already exisit`);
     }
     catch(err) {
-        return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Create User, ${err}`);
+        return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Add promotion, ${err}`);
     };
   }
   catch(err) {
