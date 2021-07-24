@@ -75,6 +75,7 @@ const nftEncodeParameters = ["address", "uint256"];
 const erc20EncodeParameters = ["address"];
 
 async function signTypedData(from, data) {
+	console.log('from', from);
   if (web3.currentProvider.isMetaMask) {
     function cb(err, result) {
       if (err) {

@@ -69,6 +69,7 @@ const listItem = async (request, response) => {
         'to': 0,
         'item_id': itemId,
         'market_id': marketId,
+        'order_id': orderId,
         'bid_amount': bidAmount,
         'sales_token_contract': '0x',
         'status': 'listed'
