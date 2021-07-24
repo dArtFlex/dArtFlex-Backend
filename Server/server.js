@@ -10,7 +10,7 @@ const secrets= require('./secrets.js')
 var RouterImage = require('./src/router/Image');
 var RouterUser = require('./src/router/User');
 var RouterMetadata = require('./src/router/Metadata');
-var RouterLazyMint = require('./src/router/LazyMint');
+// var RouterLazyMint = require('./src/router/LazyMint');
 var RouterItem = require('./src/router/Item');
 var RouterOrder = require('./src/router/Order');
 var RouterMarketplace = require('./src/router/Marketplace');
@@ -69,7 +69,7 @@ app.use((req, res, next) => {
 app.use('/api/image', RouterImage);
 app.use('/api/user', RouterUser);
 app.use('/api/metadata', RouterMetadata);
-app.use('/api/lazymint', RouterLazyMint);
+// app.use('/api/lazymint', RouterLazyMint);
 app.use('/api/item', RouterItem);
 app.use('/api/order', RouterOrder);
 app.use('/api/marketplace', RouterMarketplace);
