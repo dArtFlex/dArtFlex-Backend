@@ -6,6 +6,7 @@ const {
     getByMarketId,
     getByUserId,
     listItem,
+    unListItem,
     placeBid,
     withdrawBid,
     acceptBid,
@@ -277,6 +278,44 @@ router.post('/withdraw_bid', async(request, response) => {
     withdrawBid(request, response);
 });
 
+/**
+ * @swagger
+ * /api/bid/unlist_item:
+ *   post:
+ *      summary: Accept the highest bid
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      required:
+ *                          - id
+ *                      properties:
+ *                          id: 
+ *                              type: string
+ *                              description: The id of the bid
+ *                      example:
+ *                          id: 1
+ *      responses:
+ *           202:
+ *              description: accept bid successfuly
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: string
+ *                          example: "accept bid successfuly"
+ *           500:
+ *              description: Error accept bid.
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: string
+ *                          example: 'Error accept bid'
+ */
+ router.post('/unlist_item', async(request, response) => {
+    unListItem(request, response);
+});
 
 /**
  * @swagger
