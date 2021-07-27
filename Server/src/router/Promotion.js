@@ -68,7 +68,7 @@ const {
 
 /**
  * @swagger
- * /api/item/get_all:
+ * /api/promotion/get_all:
  *   get:
  *     summary: Returns all items
  *     responses:
