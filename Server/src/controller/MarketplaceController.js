@@ -57,6 +57,7 @@ const create = async (request, response) => {
     "type": type,
     "item_id": itemId,
     "start_price": startPrice,
+    "current_price": "0",
     "end_price": endPrice,
     "start_time": startTime,
     "end_time": endTime,
