@@ -7,6 +7,7 @@ exports.up = function(knex, Promise) {
         t.string('type').notNullable()
         t.string('start_price').notNullable()
         t.string('end_price').notNullable()
+        t.string('current_price').notNullable()
         t.string('start_time').notNullable()
         t.string('end_time').notNullable()
         t.string('platform_fee').notNullable()
