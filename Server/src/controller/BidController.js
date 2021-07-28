@@ -281,6 +281,7 @@ const buyNow = async (request, response) => {
     try{
       await knex('bid').insert(data);
       await knex('marketplace').where('id', parseInt(marketId)).update({"sold": true})
+      await knex('item').where('id', itemId).update({'owner' : userId});
       response.status(HttpStatusCodes.CREATED).send(`Item successfully sold`);
     }
     catch(err) {
