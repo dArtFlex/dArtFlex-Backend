@@ -340,7 +340,7 @@ router.post('/withdraw_bid', async(request, response) => {
  *                              description: The transaction hash
  *                      example:
  *                          id: 1
- *                          txHash: 0x7a69606196659c8ffd047280106c8ad86588b28e9124cd29fcdcd3899343ab5e
+ *                          txHash: "0x7a69606196659c8ffd047280106c8ad86588b28e9124cd29fcdcd3899343ab5e"
  *      responses:
  *           202:
  *              description: accept bid successfuly
@@ -404,7 +404,7 @@ router.post('/accept_bid', async(request, response) => {
  *                          userId: 1
  *                          marketId: 1
  *                          bidAmount: 10000000000000000
- *                          txHash: 0x7a69606196659c8ffd047280106c8ad86588b28e9124cd29fcdcd3899343ab5e
+ *                          txHash: "0x7a69606196659c8ffd047280106c8ad86588b28e9124cd29fcdcd3899343ab5e"
  *      responses:
  *           202:
  *              description : Item successfully sold
