@@ -218,6 +218,7 @@ router.get('/get_all', async(request, response) => {
  *                          - royalty_fee
  *                          - signature
  *                          - lazymint
+ *                          - hashtagIdList
  *                      properties:
  *                          contract:
  *                              type: string
@@ -246,6 +247,9 @@ router.get('/get_all', async(request, response) => {
  *                          lazymint:
  *                              type: bool
  *                              description: mint type
+ *                          hashtagIdList:
+ *                              type: array
+ *                              description: hashtag id list
  *                      example:
  *                          contract: 0x6ede7f3c26975aad32a475e1021d8f6f39c89d82,
  *                          tokenId: 27611000395240475944337849388924502630485855913601372222199548041408536408804,
@@ -256,6 +260,7 @@ router.get('/get_all', async(request, response) => {
  *                          royaltyFee: 20
  *                          lazymint: true
  *                          signature: "0x3beb428e415be366cc06f6f65f59c9d209abdcec18d88acdec838f86d6d8088e418720f89568bbe0fffc134db19d137a216c86ae98e70c21b41eed7bb39084b81b"
+ *                          hashtagIdList : [1, 3, 4]
  *      responses:
  *           202:
  *              description: The item was Successfuly created.

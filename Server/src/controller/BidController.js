@@ -190,7 +190,7 @@ const withdrawBid = async (request, response) => {
 
   try{
     const data = await knex('bid').where('id', id).update({"status": "canceled"}).returning('*');
-    await knex('marketplace').where('id', data[0]['market_id']).update({"current_price": 0});
+    await knex('marketplace').where('id', data[0]['market_id']).update({"current_price":"0"});
     await knex('activity').insert({
       'from': data[0]['user_id'],
       'to': 0,
@@ -211,7 +211,7 @@ const withdrawBid = async (request, response) => {
 
 const acceptBid = async (request, response) => {
   
-  const { id } = request.body
+  const { id, txHash } = request.body
   if (!id) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
   }
@@ -232,6 +232,7 @@ const acceptBid = async (request, response) => {
       'bid_id': id,
       'bid_amount': data[0]['bid_amount'],
       'sales_token_contract': '0x',
+      'tx_hash': txHash,
       'status': 'sold'
     });
 
@@ -244,6 +245,7 @@ const acceptBid = async (request, response) => {
       'bid_id': id,
       'bid_amount': data[0]['bid_amount'],
       'sales_token_contract': '0x',
+      'tx_hash': txHash,
       'status': 'purchased'
     });
 
@@ -256,7 +258,7 @@ const acceptBid = async (request, response) => {
 
 const buyNow = async (request, response) => {
   
-  const { orderId, itemId , userId , marketId, bidAmount } = request.body;
+  const { orderId, itemId , userId , marketId, bidAmount, txHash } = request.body;
   if (!orderId || !itemId || !userId  || !marketId || !bidAmount) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
   }
@@ -299,6 +301,7 @@ const buyNow = async (request, response) => {
         'bid_id': id[0],
         'bid_amount': bidAmount,
         'sales_token_contract': '0x',
+        'tx_hash': txHash,
         'status': 'sold'
       });
 
@@ -311,6 +314,7 @@ const buyNow = async (request, response) => {
         'bid_id': id[0],
         'bid_amount': bidAmount,
         'sales_token_contract': '0x',
+        'tx_hash': txHash,
         'status': 'purchased'
       });
       response.status(HttpStatusCodes.CREATED).send(`Item successfully sold`);

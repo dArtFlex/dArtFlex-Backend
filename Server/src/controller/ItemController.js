@@ -7,8 +7,14 @@ const knex = require('knex')(secrets.database)
 const getById = async (request, response) => {
   const id = parseInt(request.params.id)
   try{
-    const items = await knex('item').where("id", id).select("*")
-    response.status(HttpStatusCodes.ACCEPTED).send(items);
+    const items = await knex('item').where("id", id).select("*");
+    let data = [];
+    data = await Promise.all(items.map(async(item) => {
+      const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
+      item['hashtag'] = hashtag;
+      return item;
+    }));
+    response.status(HttpStatusCodes.ACCEPTED).send(data);
   }
   catch(err) {
     return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get item by Id, ${err}`);
@@ -19,7 +25,13 @@ const getByTokenId = async (request, response) => {
   const id = request.params.id
   try{
     const items = await knex('item').where("token_id", id).select("*")
-    response.status(HttpStatusCodes.ACCEPTED).send(items);
+    let data = [];
+    data = await Promise.all(items.map(async(item) => {
+      const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
+      item['hashtag'] = hashtag;
+      return item;
+    }));
+    response.status(HttpStatusCodes.ACCEPTED).send(data);
   }
   catch(err) {
     return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get item by token Id, ${err}`);
@@ -30,7 +42,13 @@ const getByOwner = async (request, response) => {
   const owner = request.params.id
   try{
     const items = await knex('item').where("owner", owner).select("*")
-    response.status(HttpStatusCodes.ACCEPTED).send(items);
+    let data = [];
+    data = await Promise.all(items.map(async(item) => {
+      const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
+      item['hashtag'] = hashtag;
+      return item;
+    }));
+    response.status(HttpStatusCodes.ACCEPTED).send(data);
   }
   catch(err) {
     return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get item by owner, ${err}`);
@@ -41,7 +59,13 @@ const getByCreator = async (request, response) => {
   const creator = request.params.id
   try{
     const items = await knex('item').where("creator", creator).select("*")
-    response.status(HttpStatusCodes.ACCEPTED).send(items);
+    let data = [];
+    data = await Promise.all(items.map(async(item) => {
+      const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
+      item['hashtag'] = hashtag;
+      return item;
+    }));
+    response.status(HttpStatusCodes.ACCEPTED).send(data);
   }
   catch(err) {
     return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get item by creator, ${err}`);
@@ -51,7 +75,13 @@ const getByCreator = async (request, response) => {
 const getAll = async (request, response) => {
   try{
     const items = await knex('item').select("*")
-    response.status(HttpStatusCodes.ACCEPTED).send(items);
+    let data = [];
+    data = await Promise.all(items.map(async(item) => {
+      const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
+      item['hashtag'] = hashtag;
+      return item;
+    }));
+    response.status(HttpStatusCodes.ACCEPTED).send(data);
   }
   catch(err) {
     return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get all item, ${err}`);
@@ -59,7 +89,7 @@ const getAll = async (request, response) => {
 }
 
 const create = async (request, response) => {
-  const { contract, tokenId , uri , creator, owner, royalty, royaltyFee, lazymint, signature } = request.body
+  const { contract, tokenId , uri , creator, owner, royalty, royaltyFee, lazymint, signature, hashtagIdList } = request.body
   if (!contract || !tokenId || !uri || !creator || !owner) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
   }
@@ -79,6 +109,14 @@ const create = async (request, response) => {
 
   try{
     const id = await knex('item').insert(data).returning('id');
+    
+    await Promise.all(hashtagIdList.map(async (hashId) => {
+      await knex('hashtag_item').insert({
+        "hashtag_id" : hashId,
+        "item_id": id[0]
+      });
+    }));
+
     await knex('activity').insert({
       'from': 0,
       'to': creator,
