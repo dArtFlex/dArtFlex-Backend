@@ -24,7 +24,7 @@ const getById = async (request, response) => {
 const getByMarketId = async (request, response) => {
   const id = parseInt(request.params.id)
   try{
-    const items = await knex('bid').where("market_id", id).select("*")
+    const items = await knex('bid').where("market_id", id).andWhereNot('status', 'listed').select("*");
     response.status(HttpStatusCodes.ACCEPTED).send(items);
   }
   catch(err) {
@@ -36,6 +36,17 @@ const getByUserId = async (request, response) => {
   const id = parseInt(request.params.id)
   try{
     const items = await knex('bid').where("user_id", id).andWhereNot("status", "canceled").select("*")
+    response.status(HttpStatusCodes.ACCEPTED).send(items);
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get bid list by user Id, ${err}`);
+  }
+}
+
+const getActiveBidByUserId = async (request, response) => {
+  const id = parseInt(request.params.id)
+  try{
+    const items = await knex('bid').where("user_id", id).andWhere("status", "pending").select("*")
     response.status(HttpStatusCodes.ACCEPTED).send(items);
   }
   catch(err) {
@@ -147,7 +158,7 @@ const placeBid = async (request, response) => {
       "status": "pending"
     };
 
-    const highestBid = await knex('bid').where("item_id", itemId).andWhereNot('status', 'pending').select('*').orderBy('bid_amount', 'DESC').limit(1);
+    const highestBid = await knex('bid').where("market_id", marketId).andWhere('status', 'pending').select('*').orderBy('bid_amount', 'DESC').limit(1);
     if(highestBid.length > 0)
     {
       const _highestBid = new BN(highestBid[0]['bid_amount']);
@@ -189,14 +200,26 @@ const withdrawBid = async (request, response) => {
   }
 
   try{
-    const data = await knex('bid').where('id', id).update({"status": "canceled"}).returning('*');
-    await knex('marketplace').where('id', data[0]['market_id']).update({"current_price":"0"});
+    const data = await knex('bid').where('id', id).returning('*');
+    const prevHighestBid = await knex('bid').where("market_id", data[0]['market_id']).andWhere('status', 'canceled').select('*').orderBy('bid_amount', 'DESC').limit(1);
+    await knex('bid').where('id', id).update({"status": "canceled"});
+
+    if(prevHighestBid.length > 0) {
+      await knex('bid').where('id', prevHighestBid[0]['id']).update({"status": "pending"});
+      await knex('marketplace').where('id', data[0]['market_id']).update({"current_price": prevHighestBid[0]['bid_amount']});
+    }
+    else {
+      await knex('marketplace').where('id', data[0]['market_id']).update({"current_price":"0"});
+    }
+
+    await knex('bid').where('id', id).del();
+    
     await knex('activity').insert({
       'from': data[0]['user_id'],
       'to': 0,
       'item_id': data[0]['item_id'],
       'market_id': data[0]['market_id'],
-      'order_id': data[0]['orderId'],
+      'order_id': data[0]['order_id'],
       'bid_id': id,
       'bid_amount': data[0]['bid_amount'],
       'sales_token_contract': '0x',
@@ -329,6 +352,7 @@ module.exports = {
   getById,
   getByMarketId,
   getByUserId,
+  getActiveBidByUserId,
   listItem,
   unListItem,
   placeBid,

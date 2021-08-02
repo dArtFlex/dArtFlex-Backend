@@ -47,8 +47,13 @@ const create = async (request, response) => {
   };
 
   try{
-    const id = await knex('hashtag').insert(data).returning('id');
-    response.status(HttpStatusCodes.CREATED).send(`hashtag Added Successfuly, id: ${id}`);
+    const result = await knex('hashtag').where('name', name).returning('id');
+    if(result.length > 0)
+      return response.status(HttpStatusCodes.CREATED).send(`hashtag exisit, id: ${result[0].id}`);
+    else {
+      const id = await knex('hashtag').insert(data).returning('id');
+      response.status(HttpStatusCodes.CREATED).send(`hashtag Added Successfuly, id: ${id}`);
+    }
   }
   catch(err) {
       return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Create hashtag, ${err}`);

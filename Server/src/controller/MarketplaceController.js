@@ -38,7 +38,10 @@ const getAll = async (request, response) => {
 
 const create = async (request, response) => {
   const { type, itemId, startPrice ,endPrice , startTime, endTime, salesTokenContract, platfromFee} = request.body
-
+  const currentMarket = await knex('marketplace').where('item_id', parseInt(itemId)).andWhere('sold', false).select("*");
+  if (currentMarket.length > 0) 
+    return response.status(HttpStatusCodes.BAD_REQUEST).send(`Item is already in marketplace`);
+    
   if(!(type == "auction" || type == "instant_buy")){
     return response.status(HttpStatusCodes.BAD_REQUEST).send(`invalid sales type`);
   }

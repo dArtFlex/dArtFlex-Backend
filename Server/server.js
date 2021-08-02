@@ -2,8 +2,11 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const fileupload = require('express-fileupload');
-const port = process.argv[2] || 8888
+const port = 8888
 const app = express()
+const server = require('http').createServer(app);
+// const io = require('socket.io')(server);
+
 const swaggerUI = require('swagger-ui-express');
 const swaggerJsDoc = require('swagger-jsdoc');
 const secrets= require('./secrets.js')
@@ -20,6 +23,7 @@ var RouterBid = require('./src/router/Bid');
 var RouterActivity = require('./src/router/Activity');
 var RouterSuperAdmin = require('./src/router/SuperAdmin');
 
+server.listen(port, () => console.log(`Listening on port ${port}...`));
 
 const options = {
     definition: {
@@ -49,9 +53,22 @@ const options = {
 
 const specs = swaggerJsDoc(options);
 
+// io.on('connection', function(socket){
+//     // get that socket and listen to events
+//     socket.on('notification', function(assinArray){
+//       // emit data from the server
+//       console.log(assinArray)
+//       io.emit('notification', assinArray);
+//     });
+// });
 
 
 app.locals.root = secrets.images_root ? secrets.images_root : 'https://s3.amazonaws.com/dartflex/imgs/';
+
+// app.use(function(request, response, next){
+//     request.io = io;
+//     next();
+// });
 
 app.use(express.static('public'));
 app.use(bodyParser.json());
@@ -64,13 +81,7 @@ app.use((req, res, next) => {
     res.header("Access-Control-Allow-Headers", "Accept, Content-Type, Authorization, X-Requested-With");
     next();
 });
-// app.use(cors({
-//     'allowedHeaders': ['sessionId', 'Content-Type'],
-//     'exposedHeaders': ['sessionId'],
-//     'origin': '*',
-//     'methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
-//     'preflightContinue': false
-// }));
+
 
 app.use('/api/image', RouterImage);
 app.use('/api/user', RouterUser);
@@ -85,4 +96,3 @@ app.use('/api/bid', RouterBid);
 app.use('/api/activity', RouterActivity);   
 app.use('/api/super_admin', RouterSuperAdmin);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
-app.listen(port, () => console.log('Server running on', port));

@@ -5,6 +5,7 @@ const {
     getById,
     getByMarketId,
     getByUserId,
+    getActiveBidByUserId,
     listItem,
     unListItem,
     placeBid,
@@ -117,6 +118,26 @@ router.get('/get_by_market/:id', async(request, response) => {
 
 router.get('/get_by_user/:id', async(request, response) => {
     getByUserId(request, response);
+});
+
+/**
+ * @swagger
+ * /api/bid/get_active_by_user/{id}:
+ *   get:
+ *     summary: Returns the bid by user id
+ *     responses:
+ *       202:
+ *         description: The list of the bid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Bid'
+ */
+
+ router.get('/get_active_by_user/:id', async(request, response) => {
+    getActiveBidByUserId(request, response);
 });
 
 /**
