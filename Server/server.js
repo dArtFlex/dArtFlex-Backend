@@ -5,12 +5,13 @@ const fileupload = require('express-fileupload');
 const port = 8888
 const app = express()
 const server = require('http').createServer(app);
-// const io = require('socket.io')(server);
+const io = require('socket.io')(server);
 
 const swaggerUI = require('swagger-ui-express');
 const swaggerJsDoc = require('swagger-jsdoc');
 const secrets= require('./secrets.js')
 var RouterImage = require('./src/router/Image');
+var RouterAlbum = require('./src/router/Album');
 var RouterUser = require('./src/router/User');
 var RouterMetadata = require('./src/router/Metadata');
 // var RouterLazyMint = require('./src/router/LazyMint');
@@ -53,25 +54,27 @@ const options = {
 
 const specs = swaggerJsDoc(options);
 
-// io.on('connection', function(socket){
-//     // get that socket and listen to events
-//     socket.on('notification', function(assinArray){
-//       // emit data from the server
-//       console.log(assinArray)
-//       io.emit('notification', assinArray);
-//     });
-// });
+io.on('connection', function(socket){
+    // get that socket and listen to events
+    socket.on('notification', function(assinArray){
+        
+      // emit data from the server
+      io.emit('notification', assinArray);
+    });
+});
 
 
 app.locals.root = secrets.images_root ? secrets.images_root : 'https://s3.amazonaws.com/dartflex/imgs/';
 
-// app.use(function(request, response, next){
-//     request.io = io;
-//     next();
-// });
+app.use(function(request, response, next){
+    request.io = io;
+    next();
+});
 
 app.use(express.static('public'));
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '500mb'}));
+app.use(bodyParser.urlencoded({limit: '500mb', extended: true}));
 app.use(cors());
 app.use(fileupload());
 
@@ -84,6 +87,7 @@ app.use((req, res, next) => {
 
 
 app.use('/api/image', RouterImage);
+app.use('/api/album', RouterAlbum);
 app.use('/api/user', RouterUser);
 app.use('/api/metadata', RouterMetadata);
 // app.use('/api/lazymint', RouterLazyMint);
