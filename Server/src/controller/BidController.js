@@ -35,7 +35,7 @@ const getByMarketId = async (request, response) => {
 const getByUserId = async (request, response) => {
   const id = parseInt(request.params.id)
   try{
-    const items = await knex('bid').where("user_id", id).andWhereNot("status", "canceled").select("*")
+    const items = await knex('bid').where("user_id", id).select("*")
     response.status(HttpStatusCodes.ACCEPTED).send(items);
   }
   catch(err) {
