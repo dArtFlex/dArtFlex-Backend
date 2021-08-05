@@ -56,7 +56,6 @@ const getActiveBidByUserId = async (request, response) => {
 
 const listItem = async (request, response) => {
   const { orderId, itemId , userId , marketId, bidAmount } = request.body;
-  console.log("asdf", marketId);
   if (!orderId || !itemId || !userId  || !marketId || !bidAmount) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
   }
@@ -64,6 +63,11 @@ const listItem = async (request, response) => {
   const result = await knex('marketplace').where("id", marketId).select("*");
   if(result.length == 0) 
     return response.status(HttpStatusCodes.BAD_REQUEST).send("marketplace id invalid");
+
+  const bidData = await knex('bid').where("market_id", marketId).andWhere('status','listed').select("*");
+  if(bidData.length > 0) 
+    return response.status(HttpStatusCodes.BAD_REQUEST).send("Item already listed");
+      
   else{
     const data = {
       "item_id": itemId,
@@ -101,19 +105,25 @@ const unListItem = async (request, response) => {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
   }
 
-  const result = await knex('bid').where("id", id).select("*");
+  const result = await knex('marketplace').where("id", id).select("*");
   if(result.length == 0) 
     return response.status(HttpStatusCodes.BAD_REQUEST).send("item did not listed");
   else{
     try{
-      await knex('bid').where("id", id).del();
+      const bidData = await knex('bid').where('market_id', id).andWhere('status', 'pending').select('*');
+      if(bidData.length > 0) 
+        return response.status(HttpStatusCodes.BAD_REQUEST).send("There is active bid in this listing");
+
+      const creatorData = await knex('bid').where('market_id', id).andWhere('status', 'listed').select('*');
+      await knex('marketplace').where("id", id).del();
+
       await knex('activity').insert({
-        'from': result[0]['user_id'],
+        'from': creatorData[0]['user_id'],
         'to': 0,
-        'item_id': result[0]['item_id'],
-        'market_id': result[0]['market_id'],
-        'order_id': result[0]['order_id'],
-        'bid_amount': result[0]['bid_amount'],
+        'item_id': creatorData[0]['item_id'],
+        'market_id': id,
+        'order_id': creatorData[0]['order_id'],
+        'bid_amount': creatorData[0]['bid_amount'],
         'bid_id': 0,
         'sales_token_contract': '0x',
         'status': 'unlisted'  
@@ -190,6 +200,49 @@ const placeBid = async (request, response) => {
       return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Place Bid, ${err}`);
     }
   }
+}
+
+const makeOffer = async (request, response) => {
+  
+  const { orderId, itemId , userId , bidAmount } = request.body;
+  if (!orderId || !itemId || !userId  || !bidAmount) {
+      return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
+  }
+
+  const result =  await knex('marketplace').where("item_id", itemId).andWhere('sold', 'false').select("*");
+  if (result.length > 0 )
+    return response.status(HttpStatusCodes.BAD_REQUEST).send("Item is currently listed in the market place");
+  
+  const data = {
+    "item_id": itemId,
+    "order_id": orderId,
+    "user_id": userId,
+    "bid_amount": bidAmount,
+    "market_id": 0,
+    "status": "offered"
+  };
+
+  try{
+    
+    // Insert new bid
+    const id = await knex('bid').insert(data).returning('id');
+    await knex('activity').insert({
+      'from': userId,
+      'to': 0,
+      'item_id': itemId,
+      'market_id': 0,
+      'order_id': orderId,
+      'bid_id': id[0],
+      'bid_amount': bidAmount,
+      'sales_token_contract': '0x',
+      'status': 'offered'
+    });
+    response.status(HttpStatusCodes.CREATED).send(`Bid offered Successfuly, id: ${id}`);
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error make offer, ${err}`);
+  }
+  
 }
 
 const withdrawBid = async (request, response) => {
@@ -356,6 +409,7 @@ module.exports = {
   listItem,
   unListItem,
   placeBid,
+  makeOffer,
   withdrawBid,
   acceptBid,
   buyNow

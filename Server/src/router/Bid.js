@@ -9,6 +9,7 @@ const {
     listItem,
     unListItem,
     placeBid,
+    makeOffer,
     withdrawBid,
     acceptBid,
     buyNow
@@ -198,6 +199,62 @@ router.get('/get_by_user/:id', async(request, response) => {
 router.post('/list_item', async(request, response) => {
     listItem(request, response);
 });
+
+/**
+ * @swagger
+ * /api/bid/make_offer:
+ *   post:
+ *      summary: Make an offer to item
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      required:
+ *                          - orderId
+ *                          - itemId
+ *                          - userId
+ *                          - bidAmount
+ *                      properties:
+ *                          orderId: 
+ *                              type: string
+ *                              description: The id of the order
+ *                          itemId:
+ *                              type: string
+ *                              description: The id of the item
+ *                          userId:
+ *                              type: string
+ *                              description: The id of the user
+ *                          bidAmount:
+ *                              type: string
+ *                              description: Bid amount
+ *                      example:
+ *                          itemId: 1
+ *                          orderId: 1
+ *                          userId: 1
+ *                          bidAmount: 10000000000000000
+ *      responses:
+ *           202:
+ *              description: Make offer Successfuly
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: string
+ *                          example: "Bid offered Successfuly, id: 8"
+ *           500:
+ *              description: Error Make Bid.
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: string
+ *                          example: 'Error Make Bid'
+ */
+
+ router.post('/make_offer', async(request, response) => {
+    makeOffer(request, response);
+});
+
 
 /**
  * @swagger

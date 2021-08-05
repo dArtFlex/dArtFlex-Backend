@@ -32,11 +32,14 @@ const createData = async (request, response) => {
   }];
 
   try{
+    const result = await knex('metadata').where('image', image).select("*");
+    if(result.length > 0)
+      return response.status(HttpStatusCodes.BAD_REQUEST).send({'message': 'image already exist'});
     const id = await knex('metadata').insert(data).returning('id');
     response.status(HttpStatusCodes.CREATED).send(`User Data Successfuly, id: ${id}`);
   }
   catch(err) {
-      return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Create Data`);
+      return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send({'message': err});
   };
 }
 
