@@ -349,7 +349,7 @@ const acceptBid = async (request, response) => {
     await knex('marketplace').where('id', parseInt(data[0]['market_id'])).update({"sold": true, "current_price": data[0]['bid_amount']});
     const buyer = await knex('bid').where('id', id).select("*");
     const seller = await knex('item').where('id', parseInt(buyer[0]['item_id'])).returning('*');
-    await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id']});
+    await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id'], 'lazymint': false});
     
     await knex('activity').insert({
       'from': seller[0]['owner'],
@@ -396,7 +396,7 @@ const acceptOffer = async (request, response) => {
     await knex('bid').where('item_id',buyer[0]['item_id']).andWhere('status','canceled offer').del();
 
     const seller = await knex('item').where('id', parseInt(buyer[0]['item_id'])).returning('*');
-    await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id']});
+    await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id'], 'lazymint': false});
     
     await knex('activity').insert({
       'from': seller[0]['owner'],
@@ -465,7 +465,7 @@ const buyNow = async (request, response) => {
       const id = await knex('bid').insert(data).returning('id');
       const seller = await knex('item').where('id', parseInt(itemId)).returning('*');
       await knex('marketplace').where('id', parseInt(marketId)).update({"sold": true, "current_price": bidAmount})
-      await knex('item').where('id', itemId).update({'owner' : userId});
+      await knex('item').where('id', itemId).update({'owner' : userId, 'lazymint': false});
 
       await knex('activity').insert({
         'from': seller[0]['owner'],
