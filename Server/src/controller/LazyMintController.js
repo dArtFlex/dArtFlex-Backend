@@ -287,8 +287,24 @@ const generateSignature = async (request, response) => {
 		signature: signature
 	})
 }
+
+const getTxHash = async (request, response) => {
+	const topic = web3.utils.keccak256('Match(bytes32,bytes32,address,address,uint256,uint256)');
+
+	
+	const data = await web3.eth.getTransactionReceipt('0xebd662c0db0f6006e648beb467f10e06fbdad322ac403df90c6ee04ff6dab823')
+	const logs = data.logs;
+	if (logs[logs.length - 1 ].topics[0] == topic) {
+		const hexData = logs[logs.length - 1 ].data;
+		const from = hexData.slice(154, 194);
+		const to = hexData.slice(218, 258);
+		return response.status(HttpStatusCodes.ACCEPTED).send({from, to, hexData});
+	}
+	
+}
 module.exports = {
   generateLazyMint,
   generateOrder,
-  generateSignature
+  generateSignature,
+  getTxHash
 }

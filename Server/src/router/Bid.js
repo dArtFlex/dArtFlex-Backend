@@ -6,12 +6,15 @@ const {
     getByMarketId,
     getByUserId,
     getActiveBidByUserId,
+    getOfferByItemId,
     listItem,
     unListItem,
     placeBid,
     makeOffer,
     withdrawBid,
+    withdrawOffer,
     acceptBid,
+    acceptOffer,
     buyNow
 } = require('../controller/BidController.js')
 
@@ -139,6 +142,28 @@ router.get('/get_by_user/:id', async(request, response) => {
 
  router.get('/get_active_by_user/:id', async(request, response) => {
     getActiveBidByUserId(request, response);
+});
+
+
+
+/**
+ * @swagger
+ * /api/bid/get_offer_by_item/{id}:
+ *   get:
+ *     summary: Returns the offer by item id
+ *     responses:
+ *       202:
+ *         description: The list of the bid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Bid'
+ */
+
+ router.get('/get_offer_by_item/:id', async(request, response) => {
+    getOfferByItemId(request, response);
 });
 
 /**
@@ -356,6 +381,48 @@ router.post('/withdraw_bid', async(request, response) => {
     withdrawBid(request, response);
 });
 
+
+/**
+ * @swagger
+ * /api/bid/withdraw_offer:
+ *   post:
+ *      summary: withdraw offer
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      required:
+ *                          - id
+ *                      properties:
+ *                          id: 
+ *                              type: string
+ *                              description: The id of the bid
+ *                      example:
+ *                          id: 1
+ *      responses:
+ *           202:
+ *              description: Withdraw offer successfuly
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: string
+ *                          example: "Withdraw offer successfuly"
+ *           500:
+ *              description: Error withdraw offer.
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: string
+ *                          example: 'Error withdraw offer'
+ */
+
+ router.post('/withdraw_offer', async(request, response) => {
+    withdrawOffer(request, response);
+});
+
+
 /**
  * @swagger
  * /api/bid/unlist_item:
@@ -439,6 +506,50 @@ router.post('/accept_bid', async(request, response) => {
     acceptBid(request, response);
 });
 
+
+/**
+ * @swagger
+ * /api/bid/accept_offer:
+ *   post:
+ *      summary: Accept the highest offer
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      required:
+ *                          - id
+ *                          - txHash
+ *                      properties:
+ *                          id: 
+ *                              type: string
+ *                              description: The id of the offer
+ *                          txHash: 
+ *                              type: string
+ *                              description: The transaction hash
+ *                      example:
+ *                          id: 1
+ *                          txHash: "0x7a69606196659c8ffd047280106c8ad86588b28e9124cd29fcdcd3899343ab5e"
+ *      responses:
+ *           202:
+ *              description: accept offer successfuly
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: string
+ *                          example: "accept offer successfuly"
+ *           500:
+ *              description: Error accept offer.
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: string
+ *                          example: 'Error accept offer'
+ */
+ router.post('/accept_offer', async(request, response) => {
+    acceptOffer(request, response);
+});
 /**
  * @swagger
  * /api/bid/buy:

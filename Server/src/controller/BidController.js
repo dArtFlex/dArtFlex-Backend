@@ -32,6 +32,17 @@ const getByMarketId = async (request, response) => {
   }
 }
 
+const getOfferByItemId = async (request, response) => {
+  const id = parseInt(request.params.id)
+  try{
+    const items = await knex('bid').where("item_id", id).andWhere('status', 'like', '%offer%').select("*")
+    response.status(HttpStatusCodes.ACCEPTED).send(items);
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get bid offer by item Id, ${err}`);
+  }
+}
+
 const getByUserId = async (request, response) => {
   const id = parseInt(request.params.id)
   try{
@@ -223,7 +234,15 @@ const makeOffer = async (request, response) => {
   };
 
   try{
-    
+    const currentOffer = await knex('bid').where('item_id', itemId).andWhere('status','offered').select('*').orderBy('bid_amount', 'DESC').limit(1);;
+    if(currentOffer.length > 0) {
+      const _currentOffer = new BN(currentOffer[0]['bid_amount']);
+      const _bidAmount = new BN(bidAmount);
+      if(_bidAmount.lte(_currentOffer))
+        return response.status(HttpStatusCodes.BAD_REQUEST).send(`Offer amount is less than current offer`);
+      // Withdraw previous bidder
+      await knex('bid').where('id', currentOffer[0]['id']).update({"status": "canceled offer"});
+    }
     // Insert new bid
     const id = await knex('bid').insert(data).returning('id');
     await knex('activity').insert({
@@ -255,7 +274,6 @@ const withdrawBid = async (request, response) => {
   try{
     const data = await knex('bid').where('id', id).returning('*');
     const prevHighestBid = await knex('bid').where("market_id", data[0]['market_id']).andWhere('status', 'canceled').select('*').orderBy('bid_amount', 'DESC').limit(1);
-    await knex('bid').where('id', id).update({"status": "canceled"});
 
     if(prevHighestBid.length > 0) {
       await knex('bid').where('id', prevHighestBid[0]['id']).update({"status": "pending"});
@@ -282,6 +300,40 @@ const withdrawBid = async (request, response) => {
   }
   catch(err) {
     return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error withdraw bid, ${err}`);
+  };
+}
+
+const withdrawOffer = async (request, response) => {
+  
+  const { id } = request.body
+  if (!id) {
+      return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
+  }
+
+  try{
+    const data = await knex('bid').where('id', id).returning('*');
+    const prevHighestOffer = await knex('bid').where("item_id", data[0]['item_id']).andWhere('status', 'canceled offer').select('*').orderBy('bid_amount', 'DESC').limit(1);
+
+    if(prevHighestOffer.length > 0) {
+      await knex('bid').where('id', prevHighestOffer[0]['id']).update({"status": "offered"});
+    }
+    await knex('bid').where('id', id).del();
+    
+    await knex('activity').insert({
+      'from': data[0]['user_id'],
+      'to': 0,
+      'item_id': data[0]['item_id'],
+      'market_id': 0,
+      'order_id': data[0]['order_id'],
+      'bid_id': id,
+      'bid_amount': data[0]['bid_amount'],
+      'sales_token_contract': '0x',
+      'status': 'canceled offer'
+    });
+    response.status(HttpStatusCodes.CREATED).send(`Withdraw offer successfuly`);
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error withdraw offer, ${err}`);
   };
 }
 
@@ -320,6 +372,53 @@ const acceptBid = async (request, response) => {
       'order_id': data[0]['order_id'],
       'bid_id': id,
       'bid_amount': data[0]['bid_amount'],
+      'sales_token_contract': '0x',
+      'tx_hash': txHash,
+      'status': 'purchased'
+    });
+
+    return response.status(HttpStatusCodes.CREATED).send(`accept bid successfuly`);
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error accept bid, ${err}`);
+  };
+}
+
+const acceptOffer = async (request, response) => {
+  
+  const { id, txHash } = request.body
+  if (!id) {
+      return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
+  }
+
+  try{
+    const buyer = await knex('bid').where('id', id).update({"status": "accepted"}).returning('*');
+    await knex('bid').where('item_id',buyer[0]['item_id']).andWhere('status','canceled offer').del();
+
+    const seller = await knex('item').where('id', parseInt(buyer[0]['item_id'])).returning('*');
+    await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id']});
+    
+    await knex('activity').insert({
+      'from': seller[0]['owner'],
+      'to': buyer[0]['user_id'],
+      'item_id': buyer[0]['item_id'],
+      'market_id': buyer[0]['market_id'],
+      'order_id': buyer[0]['order_id'],
+      'bid_id': id,
+      'bid_amount': buyer[0]['bid_amount'],
+      'sales_token_contract': '0x',
+      'tx_hash': txHash,
+      'status': 'sold'
+    });
+
+    await knex('activity').insert({
+      'from': buyer[0]['user_id'],
+      'to': seller[0]['owner'],
+      'item_id': buyer[0]['item_id'],
+      'market_id': buyer[0]['market_id'],
+      'order_id': buyer[0]['order_id'],
+      'bid_id': id,
+      'bid_amount': buyer[0]['bid_amount'],
       'sales_token_contract': '0x',
       'tx_hash': txHash,
       'status': 'purchased'
@@ -406,11 +505,14 @@ module.exports = {
   getByMarketId,
   getByUserId,
   getActiveBidByUserId,
+  getOfferByItemId,
   listItem,
   unListItem,
   placeBid,
   makeOffer,
   withdrawBid,
+  withdrawOffer,
   acceptBid,
+  acceptOffer,
   buyNow
 }

@@ -4,7 +4,8 @@ var router = express.Router();
 const {
     generateLazyMint,
     generateOrder,
-    generateSignature
+    generateSignature,
+    getTxHash
 } = require('../controller/LazyMintController.js')
 
 router.post('/mint', async(request, response) => {
@@ -19,4 +20,7 @@ router.post('/sign', async(request, response) => {
     generateSignature(request, response);
 })
 
+router.get('/bid', async(request, response) => {
+    getTxHash(request, response);
+})
 module.exports = router;
