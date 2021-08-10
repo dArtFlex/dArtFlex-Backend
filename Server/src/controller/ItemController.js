@@ -11,7 +11,9 @@ const getById = async (request, response) => {
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
+      const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
       item['hashtag'] = hashtag;
+      item['marketplace'] = marketplace;
       return item;
     }));
     response.status(HttpStatusCodes.ACCEPTED).send(data);
@@ -28,7 +30,9 @@ const getByTokenId = async (request, response) => {
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
+      const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
       item['hashtag'] = hashtag;
+      item['marketplace'] = marketplace;
       return item;
     }));
     response.status(HttpStatusCodes.ACCEPTED).send(data);
@@ -45,7 +49,9 @@ const getByOwner = async (request, response) => {
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
+      const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
       item['hashtag'] = hashtag;
+      item['marketplace'] = marketplace;
       return item;
     }));
     response.status(HttpStatusCodes.ACCEPTED).send(data);
@@ -62,7 +68,9 @@ const getByCreator = async (request, response) => {
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
+      const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
       item['hashtag'] = hashtag;
+      item['marketplace'] = marketplace;
       return item;
     }));
     response.status(HttpStatusCodes.ACCEPTED).send(data);
@@ -78,7 +86,9 @@ const getAll = async (request, response) => {
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
+      const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
       item['hashtag'] = hashtag;
+      item['marketplace'] = marketplace;
       return item;
     }));
     response.status(HttpStatusCodes.ACCEPTED).send(data);

@@ -289,17 +289,28 @@ const generateSignature = async (request, response) => {
 }
 
 const getTxHash = async (request, response) => {
-	const topic = web3.utils.keccak256('Match(bytes32,bytes32,address,address,uint256,uint256)');
-
+	const topic = web3.utils.keccak256('Transfer(address,address,uint256)');
 	
 	const data = await web3.eth.getTransactionReceipt('0xebd662c0db0f6006e648beb467f10e06fbdad322ac403df90c6ee04ff6dab823')
+	
 	const logs = data.logs;
-	if (logs[logs.length - 1 ].topics[0] == topic) {
-		const hexData = logs[logs.length - 1 ].data;
-		const from = hexData.slice(154, 194);
-		const to = hexData.slice(218, 258);
-		return response.status(HttpStatusCodes.ACCEPTED).send({from, to, hexData});
+	// return response.status(HttpStatusCodes.ACCEPTED).send({logs});
+	for (let i = 0; i < logs.length; i++) {
+		if(logs[i].address.toLowerCase() == "0x6ede7f3c26975aad32a475e1021d8f6f39c89d82" && logs[i].topics[0].toLowerCase() == topic){
+			const from = "0x" + logs[i].topics[1].toLowerCase().slice(26, 65);
+			const to = "0x" + logs[i].topics[2].toLowerCase().slice(26,65);
+			const tokenId = web3.utils.toBN(logs[i].topics[3].toLowerCase()).toString();
+			return response.status(HttpStatusCodes.ACCEPTED).send({from, to , tokenId});
+		}
+				
 	}
+	return response.status(HttpStatusCodes.ACCEPTED).send(logs);
+	// if (logs[logs.length - 1 ].topics[0] == topic) {
+	// 	const hexData = logs[logs.length - 1 ].data;
+	// 	const from = hexData.slice(154, 194);
+	// 	const to = hexData.slice(218, 258);
+	// 	return response.status(HttpStatusCodes.ACCEPTED).send({from, to, hexData});
+	// }
 	
 }
 module.exports = {
