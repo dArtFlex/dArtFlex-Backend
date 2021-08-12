@@ -1,8 +1,8 @@
+const { BN } = require('bn.js');
 var express = require('express');
 var HttpStatusCodes = require('http-status-codes');
 const secrets= require('../../secrets.js')
 const knex = require('knex')(secrets.database)
-
 
 const getById = async (request, response) => {
   const id = parseInt(request.params.id)
@@ -50,8 +50,9 @@ const create = async (request, response) => {
     if(endTime <= startTime){
       return response.status(HttpStatusCodes.BAD_REQUEST).send(`expiratoin time is invalid`);
     }
-  
-    if(endPrice <= startPrice){
+    const _startPrice = new BN(startPrice);
+    const _endPrice = new BN(endPrice);
+    if(!(_endPrice.gt(_startPrice))){
       return response.status(HttpStatusCodes.BAD_REQUEST).send(`price invalid`);
     }
   }
