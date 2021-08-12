@@ -32,9 +32,9 @@ const createData = async (request, response) => {
   }];
 
   try{
-    const result = await knex('metadata').where('image', image).select("*");
+    const result = await knex('metadata').where('image', image).andWhere('name', name).andWhere('image_data', image_data).andWhere('attribute', description).andWhere('description', attribute).select("*");
     if(result.length > 0)
-      return response.status(HttpStatusCodes.BAD_REQUEST).send({'message': 'image already exist'});
+      return response.status(HttpStatusCodes.BAD_REQUEST).send(result[0].id);
     const id = await knex('metadata').insert(data).returning('id');
     response.status(HttpStatusCodes.CREATED).send(`User Data Successfuly, id: ${id}`);
   }
