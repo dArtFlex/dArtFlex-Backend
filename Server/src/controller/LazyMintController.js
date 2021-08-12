@@ -288,6 +288,8 @@ const generateSignature = async (request, response) => {
 	})
 }
 
+
+
 const getTxHash = async (request, response) => {
 	const topic = web3.utils.keccak256('Transfer(address,address,uint256)');
 	

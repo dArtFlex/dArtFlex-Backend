@@ -23,7 +23,7 @@ var RouterMarketplace = require('./src/router/Marketplace');
 var RouterBid = require('./src/router/Bid');
 var RouterActivity = require('./src/router/Activity');
 var RouterSuperAdmin = require('./src/router/SuperAdmin');
-
+var {watchEtherTransfers} = require('./src/controller/SubscribeController');
 server.listen(port, () => console.log(`Listening on port ${port}...`));
 
 const options = {
@@ -55,9 +55,16 @@ const options = {
 const specs = swaggerJsDoc(options);
 
 io.on('connection', function(socket){
+    // console.log(socket.handshake.query.wallet);
     // get that socket and listen to events
     socket.on('notification', function(assinArray){
-        
+        // console.log(assinArray)
+      // emit data from the server
+      io.emit('notification', assinArray);
+    });
+
+    socket.on('message', function(assinArray){
+        // console.log(assinArray)
       // emit data from the server
       io.emit('notification', assinArray);
     });
@@ -100,3 +107,5 @@ app.use('/api/bid', RouterBid);
 app.use('/api/activity', RouterActivity);   
 app.use('/api/super_admin', RouterSuperAdmin);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
+
+watchEtherTransfers();
