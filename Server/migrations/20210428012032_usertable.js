@@ -4,7 +4,7 @@ exports.up = async function(knex, Promise) {
             t.increments('id').primary().notNullable()
             t.string('fullname').notNullable()
             t.string('userid').notNullable().unique()
-            t.string('email').notNullable().unique()
+            t.string('email').notNullable()
             t.string('wallet').notNullable().unique()
             t.string('overview')
             t.string('profile_image')
