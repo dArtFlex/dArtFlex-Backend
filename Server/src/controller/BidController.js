@@ -148,7 +148,7 @@ const unListItem = async (request, response) => {
         'bid_id': 0,
         'sales_token_contract': '0x',
         'status': 'unlisted'  
-      });
+      }).returning('id');
 
       const noticeId = await knex('notification').insert({
         'user_id' : creatorData[0]['user_id'],
@@ -223,7 +223,7 @@ const placeBid = async (request, response) => {
         'bid_amount': bidAmount,
         'sales_token_contract': '0x',
         'status': 'bidded'
-      });
+      }).returning('id');
 
       const noticeId = await knex('notification').insert({
         'user_id' : userId,
@@ -283,7 +283,7 @@ const makeOffer = async (request, response) => {
       'bid_amount': bidAmount,
       'sales_token_contract': '0x',
       'status': 'offered'
-    });
+    }).returning('id');
 
     const noticeId = await knex('notification').insert({
       'user_id' : userId,
@@ -375,7 +375,7 @@ const withdrawOffer = async (request, response) => {
       'bid_amount': data[0]['bid_amount'],
       'sales_token_contract': '0x',
       'status': 'canceled offer'
-    });
+    }).returning('id');
 
     const noticeId = await knex('notification').insert({
       'user_id' : data[0]['user_id'],
@@ -417,8 +417,7 @@ const acceptBid = async (request, response) => {
       'sales_token_contract': '0x',
       'tx_hash': txHash,
       'status': 'sold'
-    });
-
+    }).returning('id');
     let noticeId = await knex('notification').insert({
       'user_id' : seller[0]['owner'],
       'activity_id' : activityId[0],
@@ -438,7 +437,7 @@ const acceptBid = async (request, response) => {
       'sales_token_contract': '0x',
       'tx_hash': txHash,
       'status': 'purchased'
-    });
+    }).returning('id');
 
     noticeId = await knex('notification').insert({
       'user_id' : buyer[0]['user_id'],
@@ -480,7 +479,7 @@ const acceptOffer = async (request, response) => {
       'sales_token_contract': '0x',
       'tx_hash': txHash,
       'status': 'sold'
-    });
+    }).returning('id');
 
     let noticeId = await knex('notification').insert({
       'user_id' : seller[0]['owner'],
@@ -501,7 +500,7 @@ const acceptOffer = async (request, response) => {
       'sales_token_contract': '0x',
       'tx_hash': txHash,
       'status': 'purchased'
-    });
+    }).returning('id');
 
     noticeId = await knex('notification').insert({
       'user_id' : buyer[0]['user_id'],
@@ -565,7 +564,7 @@ const buyNow = async (request, response) => {
         'sales_token_contract': '0x',
         'tx_hash': txHash,
         'status': 'sold'
-      });
+      }).returning('id');
 
       let noticeId = await knex('notification').insert({
         'user_id' : seller[0]['owner'],
@@ -586,7 +585,7 @@ const buyNow = async (request, response) => {
         'sales_token_contract': '0x',
         'tx_hash': txHash,
         'status': 'purchased'
-      });
+      }).returning('id');
 
       noticeId = await knex('notification').insert({
         'user_id' : userId,
