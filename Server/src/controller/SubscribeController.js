@@ -9,6 +9,7 @@ async function watchEtherTransfers() {
 	web3.eth.subscribe('logs', {
 		address: '0x6ede7F3c26975AAd32a475e1021D8F6F39c89d82',
 	}, function(error, result){
+		if(error){ console.log(error) }
 		if (!error && result.topics[0].toLowerCase() == topic) {
 			const from = "0x" + result.topics[1].toLowerCase().slice(26, 65);
 			const to = "0x" + result.topics[2].toLowerCase().slice(26,65);
@@ -35,6 +36,7 @@ async function updateDB(_from, _to, tokenId) {
 			id = await knex('users').insert(user).returning('id');
 		}
 		catch(err) {
+			console.log(err);
 			return;
 		};
 	} else {

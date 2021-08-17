@@ -3,6 +3,7 @@ var HttpStatusCodes = require('http-status-codes');
 const secrets= require('../../secrets.js')
 const knex = require('knex')(secrets.database)
 
+const {getNotificationById} = require('./NotificationController');
 
 const getById = async (request, response) => {
   const id = parseInt(request.params.id)
@@ -99,6 +100,7 @@ const getAll = async (request, response) => {
 }
 
 const create = async (request, response) => {
+  // console.log(request.io.sockets.sockets)
   const { contract, tokenId , uri , creator, owner, royalty, royaltyFee, lazymint, signature, hashtagIdList } = request.body
   if (!contract || !tokenId || !uri || !creator || !owner) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
@@ -127,7 +129,7 @@ const create = async (request, response) => {
       });
     }));
 
-    await knex('activity').insert({
+    const activityId =  await knex('activity').insert({
       'from': 0,
       'to': creator,
       'item_id': id[0],
@@ -137,7 +139,17 @@ const create = async (request, response) => {
       'bid_amount': 0,
       'sales_token_contract': "0x",
       'status': 'minted'
-    });
+    }).returning('id');
+    
+    const noticeId = await knex('notification').insert({
+      'user_id' : creator,
+      'activity_id' : activityId[0],
+      'read' : false
+    }).returning('id');
+    console.log(noticeId);
+    const noticeData = await getNotificationById(noticeId[0])
+    request.io.emit('notification', noticeData);
+
     response.status(HttpStatusCodes.CREATED).send(`Data Added Successfuly, id: ${id}`);
   }
   catch(err) {

@@ -4,6 +4,7 @@ var secrets= require('../../secrets.js')
 var knex = require('knex')(secrets.database)
 const BN = require('bn.js');
 
+const {getNotificationById} = require('./NotificationController');
 
 function getCurrentTime() {
   const d = new Date();
@@ -90,7 +91,7 @@ const listItem = async (request, response) => {
     };
     try{
       const id = await knex('bid').insert(data).returning('id');
-      await knex('activity').insert({
+      const activityId = await knex('activity').insert({
         'from': userId,
         'to': 0,
         'item_id': itemId,
@@ -100,7 +101,16 @@ const listItem = async (request, response) => {
         'bid_amount': bidAmount,
         'sales_token_contract': '0x',
         'status': 'listed'
-      });
+      }).returning('id');
+
+      const noticeId = await knex('notification').insert({
+        'user_id' : userId,
+        'activity_id' : activityId[0],
+        'read' : false
+      }).returning('id');
+      const noticeData = await getNotificationById(noticeId[0])
+      request.io.emit('notification', noticeData);
+
       response.status(HttpStatusCodes.CREATED).send(`List item Successfuly, id: ${id}`);
     }
     catch(err) {
@@ -128,7 +138,7 @@ const unListItem = async (request, response) => {
       const creatorData = await knex('bid').where('market_id', id).andWhere('status', 'listed').select('*');
       await knex('marketplace').where("id", id).del();
 
-      await knex('activity').insert({
+      const activityId = await knex('activity').insert({
         'from': creatorData[0]['user_id'],
         'to': 0,
         'item_id': creatorData[0]['item_id'],
@@ -139,6 +149,15 @@ const unListItem = async (request, response) => {
         'sales_token_contract': '0x',
         'status': 'unlisted'  
       });
+
+      const noticeId = await knex('notification').insert({
+        'user_id' : creatorData[0]['user_id'],
+        'activity_id' : activityId[0],
+        'read' : false
+      }).returning('id');
+      const noticeData = await getNotificationById(noticeId[0])
+      request.io.emit('notification', noticeData);
+
       response.status(HttpStatusCodes.CREATED).send(`unList item Successfuly, id: ${id}`);
     }
     catch(err) {
@@ -194,7 +213,7 @@ const placeBid = async (request, response) => {
       // Insert new bid
       const id = await knex('bid').insert(data).returning('id');
       await knex('marketplace').where('id', marketId).update({"current_price": bidAmount});
-      await knex('activity').insert({
+      const activityId = await knex('activity').insert({
         'from': userId,
         'to': 0,
         'item_id': itemId,
@@ -205,6 +224,15 @@ const placeBid = async (request, response) => {
         'sales_token_contract': '0x',
         'status': 'bidded'
       });
+
+      const noticeId = await knex('notification').insert({
+        'user_id' : userId,
+        'activity_id' : activityId[0],
+        'read' : false
+      }).returning('id');
+      const noticeData = await getNotificationById(noticeId[0])
+      request.io.emit('notification', noticeData);
+
       response.status(HttpStatusCodes.CREATED).send(`Bid Placed Successfuly, id: ${id}`);
     }
     catch(err) {
@@ -245,7 +273,7 @@ const makeOffer = async (request, response) => {
     }
     // Insert new bid
     const id = await knex('bid').insert(data).returning('id');
-    await knex('activity').insert({
+    const activityId = await knex('activity').insert({
       'from': userId,
       'to': 0,
       'item_id': itemId,
@@ -256,6 +284,15 @@ const makeOffer = async (request, response) => {
       'sales_token_contract': '0x',
       'status': 'offered'
     });
+
+    const noticeId = await knex('notification').insert({
+      'user_id' : userId,
+      'activity_id' : activityId[0],
+      'read' : false
+    }).returning('id');
+    const noticeData = await getNotificationById(noticeId[0])
+    request.io.emit('notification', noticeData);
+
     response.status(HttpStatusCodes.CREATED).send(`Bid offered Successfuly, id: ${id}`);
   }
   catch(err) {
@@ -285,7 +322,7 @@ const withdrawBid = async (request, response) => {
 
     await knex('bid').where('id', id).del();
     
-    await knex('activity').insert({
+    const activityId = await knex('activity').insert({
       'from': data[0]['user_id'],
       'to': 0,
       'item_id': data[0]['item_id'],
@@ -296,6 +333,15 @@ const withdrawBid = async (request, response) => {
       'sales_token_contract': '0x',
       'status': 'canceled'
     });
+
+    const noticeId = await knex('notification').insert({
+      'user_id' : data[0]['user_id'],
+      'activity_id' : activityId[0],
+      'read' : false
+    }).returning('id');
+    const noticeData = await getNotificationById(noticeId[0])
+    request.io.emit('notification', noticeData);
+
     response.status(HttpStatusCodes.CREATED).send(`Withdraw bid successfuly`);
   }
   catch(err) {
@@ -319,7 +365,7 @@ const withdrawOffer = async (request, response) => {
     }
     await knex('bid').where('id', id).del();
     
-    await knex('activity').insert({
+    const activityId = await knex('activity').insert({
       'from': data[0]['user_id'],
       'to': 0,
       'item_id': data[0]['item_id'],
@@ -330,6 +376,15 @@ const withdrawOffer = async (request, response) => {
       'sales_token_contract': '0x',
       'status': 'canceled offer'
     });
+
+    const noticeId = await knex('notification').insert({
+      'user_id' : data[0]['user_id'],
+      'activity_id' : activityId[0],
+      'read' : false
+    }).returning('id');
+    const noticeData = await getNotificationById(noticeId[0])
+    request.io.emit('notification', noticeData);
+
     response.status(HttpStatusCodes.CREATED).send(`Withdraw offer successfuly`);
   }
   catch(err) {
@@ -349,9 +404,9 @@ const acceptBid = async (request, response) => {
     await knex('marketplace').where('id', parseInt(data[0]['market_id'])).update({"sold": true, "current_price": data[0]['bid_amount']});
     const buyer = await knex('bid').where('id', id).select("*");
     const seller = await knex('item').where('id', parseInt(buyer[0]['item_id'])).returning('*');
-    // await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id'], 'lazymint': false});
+    await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id'], 'lazymint': false});
     
-    await knex('activity').insert({
+    let activityId = await knex('activity').insert({
       'from': seller[0]['owner'],
       'to': buyer[0]['user_id'],
       'item_id': data[0]['item_id'],
@@ -364,7 +419,15 @@ const acceptBid = async (request, response) => {
       'status': 'sold'
     });
 
-    await knex('activity').insert({
+    let noticeId = await knex('notification').insert({
+      'user_id' : seller[0]['owner'],
+      'activity_id' : activityId[0],
+      'read' : false
+    }).returning('id');
+    let noticeData = await getNotificationById(noticeId[0])
+    request.io.emit('notification', noticeData);
+
+    activityId = await knex('activity').insert({
       'from': buyer[0]['user_id'],
       'to': seller[0]['owner'],
       'item_id': data[0]['item_id'],
@@ -376,6 +439,14 @@ const acceptBid = async (request, response) => {
       'tx_hash': txHash,
       'status': 'purchased'
     });
+
+    noticeId = await knex('notification').insert({
+      'user_id' : buyer[0]['user_id'],
+      'activity_id' : activityId[0],
+      'read' : false
+    }).returning('id');
+    noticeData = await getNotificationById(noticeId[0])
+    request.io.emit('notification', noticeData);
 
     return response.status(HttpStatusCodes.CREATED).send(`accept bid successfuly`);
   }
@@ -396,9 +467,9 @@ const acceptOffer = async (request, response) => {
     await knex('bid').where('item_id',buyer[0]['item_id']).andWhere('status','canceled offer').del();
 
     const seller = await knex('item').where('id', parseInt(buyer[0]['item_id'])).returning('*');
-    // await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id'], 'lazymint': false});
+    await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id'], 'lazymint': false});
     
-    await knex('activity').insert({
+    let activityId = await knex('activity').insert({
       'from': seller[0]['owner'],
       'to': buyer[0]['user_id'],
       'item_id': buyer[0]['item_id'],
@@ -411,7 +482,15 @@ const acceptOffer = async (request, response) => {
       'status': 'sold'
     });
 
-    await knex('activity').insert({
+    let noticeId = await knex('notification').insert({
+      'user_id' : seller[0]['owner'],
+      'activity_id' : activityId[0],
+      'read' : false
+    }).returning('id');
+    let noticeData = await getNotificationById(noticeId[0])
+    request.io.emit('notification', noticeData);
+
+    activityId = await knex('activity').insert({
       'from': buyer[0]['user_id'],
       'to': seller[0]['owner'],
       'item_id': buyer[0]['item_id'],
@@ -423,6 +502,14 @@ const acceptOffer = async (request, response) => {
       'tx_hash': txHash,
       'status': 'purchased'
     });
+
+    noticeId = await knex('notification').insert({
+      'user_id' : buyer[0]['user_id'],
+      'activity_id' : activityId[0],
+      'read' : false
+    }).returning('id');
+    noticeData = await getNotificationById(noticeId[0])
+    request.io.emit('notification', noticeData);
 
     return response.status(HttpStatusCodes.CREATED).send(`accept bid successfuly`);
   }
@@ -465,9 +552,9 @@ const buyNow = async (request, response) => {
       const id = await knex('bid').insert(data).returning('id');
       const seller = await knex('item').where('id', parseInt(itemId)).returning('*');
       await knex('marketplace').where('id', parseInt(marketId)).update({"sold": true, "current_price": bidAmount})
-      // await knex('item').where('id', itemId).update({'owner' : userId, 'lazymint': false});
+      await knex('item').where('id', itemId).update({'owner' : userId, 'lazymint': false});
 
-      await knex('activity').insert({
+      let activityId = await knex('activity').insert({
         'from': seller[0]['owner'],
         'to': userId,
         'item_id': itemId,
@@ -480,7 +567,15 @@ const buyNow = async (request, response) => {
         'status': 'sold'
       });
 
-      await knex('activity').insert({
+      let noticeId = await knex('notification').insert({
+        'user_id' : seller[0]['owner'],
+        'activity_id' : activityId[0],
+        'read' : false
+      }).returning('id');
+      let noticeData = await getNotificationById(noticeId[0])
+      request.io.emit('notification', noticeData);
+      
+      activityId = await knex('activity').insert({
         'from': userId,
         'to': seller[0]['owner'],
         'item_id': itemId,
@@ -492,6 +587,15 @@ const buyNow = async (request, response) => {
         'tx_hash': txHash,
         'status': 'purchased'
       });
+
+      noticeId = await knex('notification').insert({
+        'user_id' : userId,
+        'activity_id' : activityId[0],
+        'read' : false
+      })
+      noticeData = await getNotificationById(noticeId[0])
+      request.io.emit('notification', noticeData);
+
       response.status(HttpStatusCodes.CREATED).send(`Item successfully sold`);
     }
     catch(err) {

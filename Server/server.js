@@ -24,6 +24,8 @@ var RouterBid = require('./src/router/Bid');
 var RouterActivity = require('./src/router/Activity');
 var RouterSuperAdmin = require('./src/router/SuperAdmin');
 var {watchEtherTransfers} = require('./src/controller/SubscribeController');
+var {getNotificationByUser, updateNotificationStatus} = require('./src/controller/NotificationController');
+const { request } = require('express');
 server.listen(port, () => console.log(`Listening on port ${port}...`));
 
 const options = {
@@ -54,19 +56,14 @@ const options = {
 
 const specs = swaggerJsDoc(options);
 
-io.on('connection', function(socket){
-    // console.log(socket.handshake.query.wallet);
-    // get that socket and listen to events
-    socket.on('notification', function(assinArray){
-        // console.log(assinArray)
-      // emit data from the server
-      io.emit('notification', assinArray);
-    });
+io.on('connection',async function(socket){
+    const userId =socket.handshake.query.userId;
+    const data = await getNotificationByUser(parseInt(userId));
+    socket.emit('notification', data);
 
-    socket.on('message', function(assinArray){
-        // console.log(assinArray)
-      // emit data from the server
-      io.emit('notification', assinArray);
+    socket.on('message', function(data){
+        console.log(data)
+        updateNotificationStatus(data.id, data.read);
     });
 });
 
