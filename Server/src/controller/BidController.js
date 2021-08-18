@@ -394,7 +394,7 @@ const withdrawOffer = async (request, response) => {
 
 const acceptBid = async (request, response) => {
   
-  const { id, txHash } = request.body
+  const { id, sellerId, txHash } = request.body
   if (!id) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
   }
@@ -403,11 +403,11 @@ const acceptBid = async (request, response) => {
     const data = await knex('bid').where('id', id).update({"status": "accepted"}).returning('*');
     await knex('marketplace').where('id', parseInt(data[0]['market_id'])).update({"sold": true, "current_price": data[0]['bid_amount']});
     const buyer = await knex('bid').where('id', id).select("*");
-    const seller = await knex('item').where('id', parseInt(buyer[0]['item_id'])).returning('*');
-    await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id'], 'lazymint': false});
+    // const sellerId = await knex('item').where('id', parseInt(buyer[0]['item_id'])).returning('*');
+    // await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id'], 'lazymint': false});
     
     let activityId = await knex('activity').insert({
-      'from': seller[0]['owner'],
+      'from': sellerId,
       'to': buyer[0]['user_id'],
       'item_id': data[0]['item_id'],
       'market_id': data[0]['market_id'],
@@ -419,7 +419,7 @@ const acceptBid = async (request, response) => {
       'status': 'sold'
     }).returning('id');
     let noticeId = await knex('notification').insert({
-      'user_id' : seller[0]['owner'],
+      'user_id' : sellerId,
       'activity_id' : activityId[0],
       'read' : false
     }).returning('id');
@@ -428,7 +428,7 @@ const acceptBid = async (request, response) => {
 
     activityId = await knex('activity').insert({
       'from': buyer[0]['user_id'],
-      'to': seller[0]['owner'],
+      'to': sellerId,
       'item_id': data[0]['item_id'],
       'market_id': data[0]['market_id'],
       'order_id': data[0]['order_id'],
@@ -456,7 +456,7 @@ const acceptBid = async (request, response) => {
 
 const acceptOffer = async (request, response) => {
   
-  const { id, txHash } = request.body
+  const { id, sellerId, txHash } = request.body
   if (!id) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
   }
@@ -465,11 +465,11 @@ const acceptOffer = async (request, response) => {
     const buyer = await knex('bid').where('id', id).update({"status": "accepted"}).returning('*');
     await knex('bid').where('item_id',buyer[0]['item_id']).andWhere('status','canceled offer').del();
 
-    const seller = await knex('item').where('id', parseInt(buyer[0]['item_id'])).returning('*');
-    await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id'], 'lazymint': false});
+    // const sellerId = await knex('item').where('id', parseInt(buyer[0]['item_id'])).returning('*');
+    // await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id'], 'lazymint': false});
     
     let activityId = await knex('activity').insert({
-      'from': seller[0]['owner'],
+      'from': sellerId,
       'to': buyer[0]['user_id'],
       'item_id': buyer[0]['item_id'],
       'market_id': buyer[0]['market_id'],
@@ -482,7 +482,7 @@ const acceptOffer = async (request, response) => {
     }).returning('id');
 
     let noticeId = await knex('notification').insert({
-      'user_id' : seller[0]['owner'],
+      'user_id' : sellerId,
       'activity_id' : activityId[0],
       'read' : false
     }).returning('id');
@@ -491,7 +491,7 @@ const acceptOffer = async (request, response) => {
 
     activityId = await knex('activity').insert({
       'from': buyer[0]['user_id'],
-      'to': seller[0]['owner'],
+      'to': sellerId,
       'item_id': buyer[0]['item_id'],
       'market_id': buyer[0]['market_id'],
       'order_id': buyer[0]['order_id'],
@@ -519,7 +519,7 @@ const acceptOffer = async (request, response) => {
 
 const buyNow = async (request, response) => {
   
-  const { orderId, itemId , userId , marketId, bidAmount, txHash } = request.body;
+  const { orderId, itemId , userId , sellerId,  marketId, bidAmount, txHash } = request.body;
   if (!orderId || !itemId || !userId  || !marketId || !bidAmount) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
   }
@@ -549,12 +549,12 @@ const buyNow = async (request, response) => {
 
     try{
       const id = await knex('bid').insert(data).returning('id');
-      const seller = await knex('item').where('id', parseInt(itemId)).returning('*');
+      // const seller = await knex('item').where('id', parseInt(itemId)).returning('*');
       await knex('marketplace').where('id', parseInt(marketId)).update({"sold": true, "current_price": bidAmount})
-      await knex('item').where('id', itemId).update({'owner' : userId, 'lazymint': false});
+      // await knex('item').where('id', itemId).update({'owner' : userId, 'lazymint': false});
 
       let activityId = await knex('activity').insert({
-        'from': seller[0]['owner'],
+        'from': sellerId,
         'to': userId,
         'item_id': itemId,
         'market_id': marketId,
@@ -567,7 +567,7 @@ const buyNow = async (request, response) => {
       }).returning('id');
 
       let noticeId = await knex('notification').insert({
-        'user_id' : seller[0]['owner'],
+        'user_id' : sellerId,
         'activity_id' : activityId[0],
         'read' : false
       }).returning('id');
@@ -576,7 +576,7 @@ const buyNow = async (request, response) => {
       
       activityId = await knex('activity').insert({
         'from': userId,
-        'to': seller[0]['owner'],
+        'to': sellerId,
         'item_id': itemId,
         'market_id': marketId,
         'order_id': orderId,

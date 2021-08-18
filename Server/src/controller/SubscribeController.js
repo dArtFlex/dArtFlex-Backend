@@ -11,8 +11,8 @@ async function watchEtherTransfers() {
 	}, function(error, result){
 		if(error){ console.log(error) }
 		if (!error && result.topics[0].toLowerCase() == topic) {
-			const from = "0x" + result.topics[1].toLowerCase().slice(26, 65);
-			const to = "0x" + result.topics[2].toLowerCase().slice(26,65);
+			const from = "0x" + result.topics[1].toLowerCase().slice(26, 66);
+			const to = "0x" + result.topics[2].toLowerCase().slice(26,66);
 			const tokenId = web3.utils.toBN(result.topics[3].toLowerCase()).toString();
 			updateDB(from, to, tokenId);
 		}
