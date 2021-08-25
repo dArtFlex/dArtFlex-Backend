@@ -103,14 +103,6 @@ const listItem = async (request, response) => {
         'status': 'listed'
       }).returning('id');
 
-      const noticeId = await knex('notification').insert({
-        'user_id' : userId,
-        'activity_id' : activityId[0],
-        'read' : false
-      }).returning('id');
-      const noticeData = await getNotificationById(noticeId[0])
-      request.io.emit('notification', noticeData);
-
       response.status(HttpStatusCodes.CREATED).send(`List item Successfuly, id: ${id}`);
     }
     catch(err) {
@@ -131,11 +123,9 @@ const unListItem = async (request, response) => {
     return response.status(HttpStatusCodes.BAD_REQUEST).send("item did not listed");
   else{
     try{
-      const bidData = await knex('bid').where('market_id', id).andWhere('status', 'pending').select('*');
-      if(bidData.length > 0) 
-        return response.status(HttpStatusCodes.BAD_REQUEST).send("There is active bid in this listing");
 
       const creatorData = await knex('bid').where('market_id', id).andWhere('status', 'listed').select('*');
+      await knex('bid').where('market_id', id).del();
       await knex('marketplace').where("id", id).del();
 
       const activityId = await knex('activity').insert({
@@ -149,14 +139,6 @@ const unListItem = async (request, response) => {
         'sales_token_contract': '0x',
         'status': 'unlisted'  
       }).returning('id');
-
-      const noticeId = await knex('notification').insert({
-        'user_id' : creatorData[0]['user_id'],
-        'activity_id' : activityId[0],
-        'read' : false
-      }).returning('id');
-      const noticeData = await getNotificationById(noticeId[0])
-      request.io.emit('notification', noticeData);
 
       response.status(HttpStatusCodes.CREATED).send(`unList item Successfuly, id: ${id}`);
     }
@@ -207,6 +189,15 @@ const placeBid = async (request, response) => {
         return response.status(HttpStatusCodes.BAD_REQUEST).send(`Bid amount is less than highest bid`);
       // Withdraw previous bidder
       await knex('bid').where('id', highestBid[0]['id']).update({"status": "canceled"});
+      const noticeId = await knex('notification').insert({
+        'user_id':parseInt(highestBid[0]['user_id']),
+        'item_id':parseInt(itemId),
+        'message': 'Your bid was outbid',
+        'read': false
+      }).returning('id')
+      const noticeData = await getNotificationById(noticeId[0])
+      request.io.emit('notification', noticeData);
+
     }
     try{
       
@@ -225,13 +216,16 @@ const placeBid = async (request, response) => {
         'status': 'bidded'
       }).returning('id');
 
+      const seller = await knex('item').where('id', parseInt(itemId)).returning('*');
       const noticeId = await knex('notification').insert({
-        'user_id' : userId,
-        'activity_id' : activityId[0],
-        'read' : false
-      }).returning('id');
+        'user_id':parseInt(seller[0]['owner']),
+        'item_id':parseInt(itemId),
+        'message': 'Your Item has been bid',
+        'read': false
+      }).returning('id')
       const noticeData = await getNotificationById(noticeId[0])
       request.io.emit('notification', noticeData);
+      
 
       response.status(HttpStatusCodes.CREATED).send(`Bid Placed Successfuly, id: ${id}`);
     }
@@ -285,11 +279,13 @@ const makeOffer = async (request, response) => {
       'status': 'offered'
     }).returning('id');
 
+    const seller = await knex('item').where('id', parseInt(itemId)).returning('*');
     const noticeId = await knex('notification').insert({
-      'user_id' : userId,
-      'activity_id' : activityId[0],
-      'read' : false
-    }).returning('id');
+      'user_id':parseInt(seller[0]['owner']),
+      'item_id':parseInt(itemId),
+      'message': 'Your Item has been offered',
+      'read': false
+    }).returning('id')
     const noticeData = await getNotificationById(noticeId[0])
     request.io.emit('notification', noticeData);
 
@@ -334,13 +330,6 @@ const withdrawBid = async (request, response) => {
       'status': 'canceled'
     });
 
-    const noticeId = await knex('notification').insert({
-      'user_id' : data[0]['user_id'],
-      'activity_id' : activityId[0],
-      'read' : false
-    }).returning('id');
-    const noticeData = await getNotificationById(noticeId[0])
-    request.io.emit('notification', noticeData);
 
     response.status(HttpStatusCodes.CREATED).send(`Withdraw bid successfuly`);
   }
@@ -377,14 +366,6 @@ const withdrawOffer = async (request, response) => {
       'status': 'canceled offer'
     }).returning('id');
 
-    const noticeId = await knex('notification').insert({
-      'user_id' : data[0]['user_id'],
-      'activity_id' : activityId[0],
-      'read' : false
-    }).returning('id');
-    const noticeData = await getNotificationById(noticeId[0])
-    request.io.emit('notification', noticeData);
-
     response.status(HttpStatusCodes.CREATED).send(`Withdraw offer successfuly`);
   }
   catch(err) {
@@ -406,7 +387,7 @@ const acceptBid = async (request, response) => {
     // const sellerId = await knex('item').where('id', parseInt(buyer[0]['item_id'])).returning('*');
     await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id'], 'lazymint': false});
     
-    let activityId = await knex('activity').insert({
+    await knex('activity').insert({
       'from': sellerId,
       'to': buyer[0]['user_id'],
       'item_id': data[0]['item_id'],
@@ -418,15 +399,8 @@ const acceptBid = async (request, response) => {
       'tx_hash': txHash,
       'status': 'sold'
     }).returning('id');
-    let noticeId = await knex('notification').insert({
-      'user_id' : sellerId,
-      'activity_id' : activityId[0],
-      'read' : false
-    }).returning('id');
-    let noticeData = await getNotificationById(noticeId[0])
-    request.io.emit('notification', noticeData);
 
-    activityId = await knex('activity').insert({
+    await knex('activity').insert({
       'from': buyer[0]['user_id'],
       'to': sellerId,
       'item_id': data[0]['item_id'],
@@ -439,12 +413,13 @@ const acceptBid = async (request, response) => {
       'status': 'purchased'
     }).returning('id');
 
-    noticeId = await knex('notification').insert({
-      'user_id' : buyer[0]['user_id'],
-      'activity_id' : activityId[0],
-      'read' : false
-    }).returning('id');
-    noticeData = await getNotificationById(noticeId[0])
+    const noticeId = await knex('notification').insert({
+      'user_id':parseInt(buyer[0]['user_id']),
+      'item_id':parseInt(buyer[0]['item_id']),
+      'message': 'Congratulations on your successful purchase!',
+      'read': false
+    }).returning('id')
+    const noticeData = await getNotificationById(noticeId[0])
     request.io.emit('notification', noticeData);
 
     return response.status(HttpStatusCodes.CREATED).send(`accept bid successfuly`);
@@ -468,7 +443,7 @@ const acceptOffer = async (request, response) => {
     // const sellerId = await knex('item').where('id', parseInt(buyer[0]['item_id'])).returning('*');
     await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id'], 'lazymint': false});
     
-    let activityId = await knex('activity').insert({
+    await knex('activity').insert({
       'from': sellerId,
       'to': buyer[0]['user_id'],
       'item_id': buyer[0]['item_id'],
@@ -480,16 +455,8 @@ const acceptOffer = async (request, response) => {
       'tx_hash': txHash,
       'status': 'sold'
     }).returning('id');
-
-    let noticeId = await knex('notification').insert({
-      'user_id' : sellerId,
-      'activity_id' : activityId[0],
-      'read' : false
-    }).returning('id');
-    let noticeData = await getNotificationById(noticeId[0])
-    request.io.emit('notification', noticeData);
-
-    activityId = await knex('activity').insert({
+    
+    await knex('activity').insert({
       'from': buyer[0]['user_id'],
       'to': sellerId,
       'item_id': buyer[0]['item_id'],
@@ -502,12 +469,13 @@ const acceptOffer = async (request, response) => {
       'status': 'purchased'
     }).returning('id');
 
-    noticeId = await knex('notification').insert({
-      'user_id' : buyer[0]['user_id'],
-      'activity_id' : activityId[0],
-      'read' : false
-    }).returning('id');
-    noticeData = await getNotificationById(noticeId[0])
+    const noticeId = await knex('notification').insert({
+      'user_id':parseInt(buyer[0]['user_id']),
+      'item_id':parseInt(buyer[0]['item_id']),
+      'message': 'Congratulations on your successful purchase!',
+      'read': false
+    }).returning('id')
+    const noticeData = await getNotificationById(noticeId[0])
     request.io.emit('notification', noticeData);
 
     return response.status(HttpStatusCodes.CREATED).send(`accept bid successfuly`);
@@ -553,7 +521,7 @@ const buyNow = async (request, response) => {
       await knex('marketplace').where('id', parseInt(marketId)).update({"sold": true, "current_price": bidAmount})
       await knex('item').where('id', itemId).update({'owner' : userId, 'lazymint': false});
 
-      let activityId = await knex('activity').insert({
+      await knex('activity').insert({
         'from': sellerId,
         'to': userId,
         'item_id': itemId,
@@ -566,15 +534,7 @@ const buyNow = async (request, response) => {
         'status': 'sold'
       }).returning('id');
 
-      let noticeId = await knex('notification').insert({
-        'user_id' : sellerId,
-        'activity_id' : activityId[0],
-        'read' : false
-      }).returning('id');
-      let noticeData = await getNotificationById(noticeId[0])
-      request.io.emit('notification', noticeData);
-      
-      activityId = await knex('activity').insert({
+      await knex('activity').insert({
         'from': userId,
         'to': sellerId,
         'item_id': itemId,
@@ -587,12 +547,13 @@ const buyNow = async (request, response) => {
         'status': 'purchased'
       }).returning('id');
 
-      noticeId = await knex('notification').insert({
-        'user_id' : userId,
-        'activity_id' : activityId[0],
-        'read' : false
-      })
-      noticeData = await getNotificationById(noticeId[0])
+      const noticeId = await knex('notification').insert({
+        'user_id':parseInt(sellerId),
+        'item_id':parseInt(itemId),
+        'message': 'Item was sold',
+        'read': false
+      }).returning('id')
+      const noticeData = await getNotificationById(noticeId[0])
       request.io.emit('notification', noticeData);
 
       response.status(HttpStatusCodes.CREATED).send(`Item successfully sold`);

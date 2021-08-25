@@ -264,8 +264,8 @@ const generateOrder = async (request, response) => {
 		orderTypes,
 	)
 	
-  const signatureOrder = await signTypedData(taker, data);
-  return response.send({ ...order, 'signature': signatureOrder });
+//   const signatureOrder = await signTypedData(taker, data);
+  return response.send({ ...order, 'signature': "signatureOrder" });
 }
 
 const generateSignature = async (request, response) => {

@@ -3,12 +3,12 @@ var HttpStatusCodes = require('http-status-codes');
 const secrets= require('../../secrets.js')
 const knex = require('knex')(secrets.database)
 
-const {getNotificationById} = require('./NotificationController');
+// const {getNotificationById} = require('./NotificationController');
 
 const getById = async (request, response) => {
   const id = parseInt(request.params.id)
   try{
-    const items = await knex('item').where("id", id).select("*");
+    const items = await knex('item').where("id", id).select("*").orderBy('created_at', 'DESC');;
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
@@ -27,7 +27,7 @@ const getById = async (request, response) => {
 const getByTokenId = async (request, response) => {
   const id = request.params.id
   try{
-    const items = await knex('item').where("token_id", id).select("*")
+    const items = await knex('item').where("token_id", id).select("*").orderBy('created_at', 'DESC');
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
@@ -46,7 +46,7 @@ const getByTokenId = async (request, response) => {
 const getByOwner = async (request, response) => {
   const owner = request.params.id
   try{
-    const items = await knex('item').where("owner", owner).select("*")
+    const items = await knex('item').where("owner", owner).select("*").orderBy('created_at', 'DESC');
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
@@ -65,7 +65,7 @@ const getByOwner = async (request, response) => {
 const getByCreator = async (request, response) => {
   const creator = request.params.id
   try{
-    const items = await knex('item').where("creator", creator).select("*")
+    const items = await knex('item').where("creator", creator).select("*").orderBy('created_at', 'DESC');
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
@@ -83,7 +83,7 @@ const getByCreator = async (request, response) => {
 
 const getAll = async (request, response) => {
   try{
-    const items = await knex('item').select("*")
+    const items = await knex('item').select("*").orderBy('created_at', 'DESC');
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
@@ -141,14 +141,6 @@ const create = async (request, response) => {
       'status': 'minted'
     }).returning('id');
     
-    const noticeId = await knex('notification').insert({
-      'user_id' : creator,
-      'activity_id' : activityId[0],
-      'read' : false
-    }).returning('id');
-    console.log(noticeId);
-    const noticeData = await getNotificationById(noticeId[0])
-    request.io.emit('notification', noticeData);
 
     response.status(HttpStatusCodes.CREATED).send(`Data Added Successfuly, id: ${id}`);
   }

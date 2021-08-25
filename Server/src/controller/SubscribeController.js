@@ -7,7 +7,7 @@ const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://rinkeby.infura
 async function watchEtherTransfers() {
 	const topic = web3.utils.keccak256('Transfer(address,address,uint256)');
 	web3.eth.subscribe('logs', {
-		address: '0x6ede7F3c26975AAd32a475e1021D8F6F39c89d82',
+		address: '0xc673958b3E599C06D650e09DDAD533b30cF5FbEF',
 	}, function(error, result){
 		if(error){ console.log(error) }
 		if (!error && result.topics[0].toLowerCase() == topic) {

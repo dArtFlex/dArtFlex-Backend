@@ -6,7 +6,24 @@ const knex = require('knex')(secrets.database)
 const getNotificationByUser = async (userId) => {
   try{
 
-    const data = await knex('activity').rightJoin('notification', 'activity.id', 'notification.activity_id').where('notification.user_id', userId).andWhere('notification.read', false).select("*");
+    const notifications = await knex('notification').where("user_id", userId).select("*");
+    let data = [];
+    data = await Promise.all(notifications.map(async(notification) => {
+      const item = await knex('item').where('id', notification['item_id']);
+      if(item.length == 0) 
+      {
+        notification['image_url'] = '';
+        return notification;
+      }
+      else {
+        const metadataId = item[0]['uri'].split('get/').pop();
+        console.log(metadataId)
+        const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).select("*");
+        notification['image_url'] = imageUrl[0]['image'];
+        return notification;
+      }
+      
+    }));
     return data;
   }
   catch(err) {
@@ -18,7 +35,23 @@ const getNotificationByUser = async (userId) => {
 const getNotificationById = async (id) => {
   try{
 
-    const data = await knex('activity').rightJoin('notification', 'activity.id', 'notification.activity_id').where('notification.id', id).andWhere('notification.read', false).select("*");
+    const notifications = await knex('notification').where("id", id).select("*");
+    let data = [];
+    data = await Promise.all(notifications.map(async(notification) => {
+      const item = await knex('item').where('id', notification['item_id']);
+      if(item.length == 0) 
+      {
+        notification['image_url'] = '';
+        return notification;
+      }
+      else {
+        const metadataId = item[0]['uri'].split('get/').pop();
+        const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).select("*");
+        notification['image_url'] = imageUrl[0]['image'];
+        return notification;
+      }
+      
+    }));
     return data;
   }
   catch(err) {
