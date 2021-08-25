@@ -6,9 +6,11 @@ const knex = require('knex')(secrets.database)
 // const {getNotificationById} = require('./NotificationController');
 
 const getById = async (request, response) => {
-  const id = parseInt(request.params.id)
+  const id = parseInt(request.params.id);
+  const {page, limit} = request.query;
+  const offset = limit * (page - 1);
   try{
-    const items = await knex('item').where("id", id).select("*").orderBy('created_at', 'DESC');;
+    const items = await knex('item').where("id", id).select("*").orderBy('created_at', 'DESC').offset(offset).limit(limit);
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
@@ -25,9 +27,11 @@ const getById = async (request, response) => {
 }
 
 const getByTokenId = async (request, response) => {
-  const id = request.params.id
+  const id = request.params.id;
+  const {page, limit} = request.query;
+  const offset = limit * (page - 1);
   try{
-    const items = await knex('item').where("token_id", id).select("*").orderBy('created_at', 'DESC');
+    const items = await knex('item').where("token_id", id).select("*").orderBy('created_at', 'DESC').offset(offset).limit(limit);
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
@@ -44,9 +48,11 @@ const getByTokenId = async (request, response) => {
 }
 
 const getByOwner = async (request, response) => {
-  const owner = request.params.id
+  const owner = request.params.id;
+  const {page, limit} = request.query;
+  const offset = limit * (page - 1);
   try{
-    const items = await knex('item').where("owner", owner).select("*").orderBy('created_at', 'DESC');
+    const items = await knex('item').where("owner", owner).select("*").orderBy('created_at', 'DESC').offset(offset).limit(limit);
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
@@ -64,8 +70,10 @@ const getByOwner = async (request, response) => {
 
 const getByCreator = async (request, response) => {
   const creator = request.params.id
+  const {page, limit} = request.query;
+  const offset = limit * (page - 1);
   try{
-    const items = await knex('item').where("creator", creator).select("*").orderBy('created_at', 'DESC');
+    const items = await knex('item').where("creator", creator).select("*").orderBy('created_at', 'DESC').offset(offset).limit(limit);
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
@@ -83,7 +91,9 @@ const getByCreator = async (request, response) => {
 
 const getAll = async (request, response) => {
   try{
-    const items = await knex('item').select("*").orderBy('created_at', 'DESC');
+    const {page, limit} = request.query;
+    const offset = limit * (page - 1);
+    const items = await knex('item').select("*").orderBy('created_at', 'DESC').offset(offset).limit(limit);
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
