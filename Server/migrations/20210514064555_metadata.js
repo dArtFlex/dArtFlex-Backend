@@ -7,7 +7,7 @@ exports.up = function(knex, Promise) {
         t.string('image').notNullable()
         t.string('image_data').notNullable()
         t.string('attribute')
-        t.string('description')
+        t.string('description', 2000)
         t.timestamp('created_at').defaultTo(knex.fn.now())
         t.timestamp('updated_at').defaultTo(knex.fn.now())
     })

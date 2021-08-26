@@ -5,7 +5,17 @@ const fileupload = require('express-fileupload');
 const port = 8888
 const app = express()
 const server = require('http').createServer(app);
-const io = require('socket.io')(server);
+const io = require('socket.io')(server, {
+    cors: {
+        origin : [
+            "https://dartflex-dev.ml/",
+            "https://dartflex-stage.ml/"
+        ],
+        methods: ["GET", "POST"],
+        credentials: true
+    }
+
+});
 
 const swaggerUI = require('swagger-ui-express');
 const swaggerJsDoc = require('swagger-jsdoc');
