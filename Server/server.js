@@ -7,12 +7,9 @@ const app = express()
 const server = require('http').createServer(app);
 const io = require('socket.io')(server, {
     cors: {
-        origin : [
-            "https://dartflex-dev.ml/",
-            "https://dartflex-stage.ml/"
-        ],
+        origin : ["*"],
         methods: ["GET", "POST"],
-        credentials: true
+        // credentials: true
     }
 
 });
