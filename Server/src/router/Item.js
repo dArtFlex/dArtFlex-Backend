@@ -6,6 +6,7 @@ const {
     getByTokenId,
     getByOwner,
     getByCreator,
+    getSalesDataByUser,
     getAll,
     create,
     update
@@ -150,6 +151,10 @@ router.get('/get_by_owner/:id', async(request, response) => {
     getByOwner(request, response);
 });
 
+
+router.get('/get_salesdata_by_owner/:id', async(request, response) => {
+    getSalesDataByUser(request, response);
+});
 /**
  * @swagger
  * /api/item/get_by_creator/{wallet}:

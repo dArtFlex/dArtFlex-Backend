@@ -89,6 +89,35 @@ const getByCreator = async (request, response) => {
   }
 }
 
+const getSalesDataByUser = async (request, response) => {
+  const owner = request.params.id
+  try{
+    const items = await knex('item').where("owner", owner).select("*").orderBy('created_at', 'DESC');
+    let data = [];
+    data = await Promise.all(items.map(async(item) => {
+      const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
+      let highestBid = [];
+      if(marketplace.length > 0 )
+      { 
+        if(!marketplace[0]['sold']) {
+          highestBid = await knex('bid').where('market_id', marketplace[0]['id']).andWhere("status", "pending").select("*");
+        }
+      }
+      const highestOffer  = await knex('bid').where("item_id", item.id).andWhere('status', 'like', 'offered').select("*")
+      item['highest_offer'] = highestOffer;
+      item['highest_bid'] = highestBid;
+      item['marketplace'] = marketplace;
+      if(!(highestOffer.length == 0 && highestBid.length == 0 && marketplace.length == 0))
+        return item;
+      return ;  
+    }));
+    response.status(HttpStatusCodes.ACCEPTED).send(data.filter(_data => _data!=null));
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get item by creator, ${err}`);
+  }
+}
+
 const getAll = async (request, response) => {
   try{
     const {page, limit} = request.query;
@@ -191,6 +220,7 @@ module.exports = {
   getByTokenId,
   getByOwner,
   getByCreator,
+  getSalesDataByUser,
   getAll,
   create,
   update
