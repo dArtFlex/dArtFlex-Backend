@@ -96,7 +96,13 @@ const getSalesDataByUser = async (request, response) => {
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
-      let highestBid = [];
+      const metadataId = item['uri'].split('get/').pop();
+      const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).select("*");
+      if(imageUrl.length > 0)
+        item['image_url'] = imageUrl[0]['image'];
+      else
+        item['image_url'] = [];
+      let highestBid = '';
       if(marketplace.length > 0 )
       { 
         if(!marketplace[0]['sold']) {
