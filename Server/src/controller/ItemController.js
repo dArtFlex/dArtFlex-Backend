@@ -98,11 +98,15 @@ const getSalesDataByUser = async (request, response) => {
       const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
       const metadataId = item['uri'].split('get/').pop();
       const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).select("*");
-      if(imageUrl.length > 0)
+      if(imageUrl.length > 0){
+        item['image_name'] = imageUrl[0]['name']; 
         item['image_url'] = imageUrl[0]['image'];
-      else
-        item['image_url'] = [];
-      let highestBid = '';
+      }
+      else {
+        item['image_url'] = '';
+        item['image_name'] = ''; 
+      }
+      let highestBid = [];
       if(marketplace.length > 0 )
       { 
         if(!marketplace[0]['sold']) {
