@@ -4,6 +4,12 @@ var HttpStatusCodes = require('http-status-codes');
 const secrets= require('../../secrets.js')
 const knex = require('knex')(secrets.database)
 
+function getCurrentTime() {
+  const d = new Date();
+  const n = d.getTime();
+  return n;
+}
+
 const getById = async (request, response) => {
   const id = parseInt(request.params.id)
   try{
@@ -33,6 +39,39 @@ const getAll = async (request, response) => {
   }
   catch(err) {
     return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get marketplace by Id, ${err}`);
+  }
+}
+
+const checkMarket = async (request, response) => {
+  try{
+    const result = await knex('marketplace').select("*")
+    console.log(result)
+    result.map(async(market) => {
+        const currentTime = getCurrentTime();
+        if(currentTime >= market['end_time']) {
+          const higgestBid = await knex('bid').where('market_id', market.id).andWhere('status','pending').select('*');
+          if( higgestBid.length == 0 ){
+            const creatorData = await knex('bid').where('market_id', market.id).andWhere('status','listed').select('*');
+            await knex('bid').where('market_id', market.id).andWhere('status','listed').del();
+            await knex('marketplace').where('id', market.id).del();
+            await knex('activity').insert({
+              'from': creatorData[0]['user_id'],
+              'to': 0,
+              'item_id': creatorData[0]['item_id'],
+              'market_id': market.id,
+              'order_id': creatorData[0]['order_id'],
+              'bid_amount': creatorData[0]['bid_amount'],
+              'bid_id': 0,
+              'sales_token_contract': '0x',
+              'status': 'unlisted'  
+            }).returning('id');
+          }
+        }
+    })
+    return true;
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`checkMarket ${err}`);
   }
 }
 
@@ -83,5 +122,6 @@ module.exports = {
   getById,
   getByItemId,
   getAll,
-  create
+  create,
+  checkMarket
 }

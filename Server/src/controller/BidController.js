@@ -148,6 +148,44 @@ const unListItem = async (request, response) => {
   }
 }
 
+
+const changePrice = async (request, response) => {
+  
+  const { id, newPrice } = request.body;
+  if (!id) {
+      return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
+  }
+
+  const result = await knex('marketplace').where("id", id).select("*");
+  if(result.length == 0) 
+    return response.status(HttpStatusCodes.BAD_REQUEST).send("item did not listed");
+  else{
+    try{
+
+      const creatorData = await knex('bid').where('market_id', id).andWhere('status', 'listed').select('*');
+      await knex('bid').where('market_id', id).andWhereNot('status', 'listed').del();
+      await knex('marketplace').update('start_price', newPrice).where("id", id);
+      await knex('bid').where('market_id', id).andWhere('status', 'listed').update('bid_amount', newPrice);
+      const activityId = await knex('activity').insert({
+        'from': creatorData[0]['user_id'],
+        'to': 0,
+        'item_id': creatorData[0]['item_id'],
+        'market_id': id,
+        'order_id': creatorData[0]['order_id'],
+        'bid_amount': newPrice,
+        'bid_id': 0,
+        'sales_token_contract': '0x',
+        'status': 'price changed'  
+      }).returning('id');
+
+      response.status(HttpStatusCodes.CREATED).send(`item price chagned Successfuly, id: ${id}`);
+    }
+    catch(err) {
+      return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error unList Item, ${err}`);
+    }
+  }
+}
+
 const placeBid = async (request, response) => {
   
   const { orderId, itemId , userId , marketId, bidAmount } = request.body;
@@ -204,6 +242,9 @@ const placeBid = async (request, response) => {
       // Insert new bid
       const id = await knex('bid').insert(data).returning('id');
       await knex('marketplace').where('id', marketId).update({"current_price": bidAmount});
+      if((result[0]['end_time'] - getCurrentTime()) <= 900000) {
+        await knex('marketplace').where('id', marketId).update({"end_time": result[0]['end_time'] + 900000});
+      }
       const activityId = await knex('activity').insert({
         'from': userId,
         'to': 0,
@@ -485,6 +526,62 @@ const acceptOffer = async (request, response) => {
   };
 }
 
+const claimNFT = async (request, response) => {
+  
+  const { id, sellerId, txHash } = request.body
+  if (!id) {
+      return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
+  }
+
+  try{
+    const data = await knex('bid').where('id', id).update({"status": "accepted"}).returning('*');
+    await knex('marketplace').where('id', parseInt(data[0]['market_id'])).update({"sold": true, "current_price": data[0]['bid_amount']});
+    const buyer = await knex('bid').where('id', id).select("*");
+    // const sellerId = await knex('item').where('id', parseInt(buyer[0]['item_id'])).returning('*');
+    await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id'], 'lazymint': false});
+    
+    await knex('activity').insert({
+      'from': sellerId,
+      'to': buyer[0]['user_id'],
+      'item_id': data[0]['item_id'],
+      'market_id': data[0]['market_id'],
+      'order_id': data[0]['order_id'],
+      'bid_id': id,
+      'bid_amount': data[0]['bid_amount'],
+      'sales_token_contract': '0x',
+      'tx_hash': txHash,
+      'status': 'sold'
+    }).returning('id');
+
+    await knex('activity').insert({
+      'from': buyer[0]['user_id'],
+      'to': sellerId,
+      'item_id': data[0]['item_id'],
+      'market_id': data[0]['market_id'],
+      'order_id': data[0]['order_id'],
+      'bid_id': id,
+      'bid_amount': data[0]['bid_amount'],
+      'sales_token_contract': '0x',
+      'tx_hash': txHash,
+      'status': 'purchased'
+    }).returning('id');
+
+    const noticeId = await knex('notification').insert({
+      'user_id':parseInt(buyer[0]['user_id']),
+      'item_id':parseInt(buyer[0]['item_id']),
+      'message': 'Congratulations on your successful purchase!',
+      'read': false
+    }).returning('id')
+    const noticeData = await getNotificationById(noticeId[0])
+    request.io.emit('notification', noticeData);
+
+    return response.status(HttpStatusCodes.CREATED).send(`Claim NFT successfuly`);
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error claim NFT, ${err}`);
+  };
+}
+
 const buyNow = async (request, response) => {
   
   const { orderId, itemId , userId , sellerId,  marketId, bidAmount, txHash } = request.body;
@@ -564,6 +661,7 @@ const buyNow = async (request, response) => {
   }
 }
 
+
 module.exports = {
   getById,
   getByMarketId,
@@ -578,5 +676,7 @@ module.exports = {
   withdrawOffer,
   acceptBid,
   acceptOffer,
-  buyNow
+  buyNow,
+  claimNFT,
+  changePrice
 }

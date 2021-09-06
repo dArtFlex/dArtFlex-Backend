@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const fileupload = require('express-fileupload');
+const cron = require('node-cron');
 const port = 8888
 const app = express()
 const server = require('http').createServer(app);
@@ -32,6 +33,7 @@ var RouterActivity = require('./src/router/Activity');
 var RouterSuperAdmin = require('./src/router/SuperAdmin');
 var {watchEtherTransfers} = require('./src/controller/SubscribeController');
 var {getNotificationByUser, updateNotificationStatus} = require('./src/controller/NotificationController');
+var {checkMarket} = require('./src/controller/MarketplaceController');
 const { request } = require('express');
 server.listen(port, () => console.log(`Listening on port ${port}...`));
 
@@ -113,3 +115,8 @@ app.use('/api/super_admin', RouterSuperAdmin);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
 
 watchEtherTransfers();
+
+cron.schedule('*/5 * * * *', function () {
+	checkMarket();
+})
+// checkMarket();

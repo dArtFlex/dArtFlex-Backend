@@ -4,6 +4,10 @@ const secrets= require('../../secrets.js')
 const knex = require('knex')(secrets.database)
 
 // const {getNotificationById} = require('./NotificationController');
+function paginate(array, page_size, page_number) {
+  // human-readable page numbers usually start with 1, so we reduce 1 in the first argument
+  return array.slice((page_number - 1) * page_size, page_number * page_size);
+}
 
 const getById = async (request, response) => {
   const id = parseInt(request.params.id);
@@ -128,6 +132,116 @@ const getSalesDataByUser = async (request, response) => {
   }
 }
 
+
+const getAuction = async (request, response) => {
+  try{
+    const {page, limit} = request.query;
+    const items = await knex('item').select("*").orderBy('created_at', 'DESC');
+    let data = [];
+    data = await Promise.all(items.map(async(item) => {
+      const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
+      const metadataId = item['uri'].split('get/').pop();
+      const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).select("*");
+      if(imageUrl.length > 0){
+        item['image'] = imageUrl; 
+      }
+      else {
+        item['image'] = [];
+      }
+      item['marketplace'] = marketplace;
+      if(marketplace.length > 0 )
+      { 
+        if(!marketplace[0]['sold'] && marketplace[0]['type'] == "auction") {
+          console.log("here")
+          const bidData = await knex('bid').where('market_id', marketplace[0]['id']).andWhere('status','listed').select("*");
+          item['user'] = [];
+          if(bidData.length > 0) {
+            const userData = await knex('users').where('id', bidData[0]['user_id']);
+            item['user'] = userData;
+          }
+          return item;
+        }
+      }
+      return ;  
+    }));
+    response.status(HttpStatusCodes.ACCEPTED).send(paginate(data.filter(_data => _data!=null), limit, page));
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get item by creator, ${err}`);
+  }
+}
+
+const getBuyNow = async (request, response) => {
+  try{
+    const {page, limit} = request.query;
+    const items = await knex('item').select("*").orderBy('created_at', 'DESC');
+    let data = [];
+    data = await Promise.all(items.map(async(item) => {
+      const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
+      const metadataId = item['uri'].split('get/').pop();
+      const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).select("*");
+      if(imageUrl.length > 0){
+        item['image'] = imageUrl; 
+      }
+      else {
+        item['image'] = [];
+      }
+      item['marketplace'] = marketplace;
+      if(marketplace.length > 0 )
+      { 
+        if(!marketplace[0]['sold'] && marketplace[0]['type'] == "instant_buy") {
+          console.log("here")
+          const bidData = await knex('bid').where('market_id', marketplace[0]['id']).andWhere('status','listed').select("*");
+          item['user'] = [];
+          if(bidData.length > 0) {
+            const userData = await knex('users').where('id', bidData[0]['user_id']);
+            item['user'] = userData;
+          }
+          return item;
+        }
+      }
+      return ;  
+    }));
+    response.status(HttpStatusCodes.ACCEPTED).send(paginate(data.filter(_data => _data!=null), limit, page));
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get item by creator, ${err}`);
+  }
+}
+
+const getSold = async (request, response) => {
+  try{
+    const {page, limit} = request.query;
+    const items = await knex('item').select("*").orderBy('created_at', 'DESC');
+    let data = [];
+    data = await Promise.all(items.map(async(item) => {
+      const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
+      const metadataId = item['uri'].split('get/').pop();
+      const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).select("*");
+      if(imageUrl.length > 0){
+        item['image'] = imageUrl; 
+      }
+      else {
+        item['image'] = [];
+      }
+      item['marketplace'] = marketplace;
+      if(marketplace.length > 0 )
+      { 
+        if(marketplace[0]['sold']) {
+          console.log("here")
+          const userData = await knex('users').where('id', item['owner']);
+          item['user'] = userData;
+          return item;
+        }
+      }
+      return ;  
+    }));
+    response.status(HttpStatusCodes.ACCEPTED).send(paginate(data.filter(_data => _data!=null), limit, page));
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get item by creator, ${err}`);
+  }
+}
 const getAll = async (request, response) => {
   try{
     const {page, limit} = request.query;
@@ -227,11 +341,14 @@ const update = async (request, response) => {
 
 module.exports = {
   getById,
+  getAuction,
   getByTokenId,
   getByOwner,
   getByCreator,
   getSalesDataByUser,
   getAll,
+  getBuyNow,
+  getSold,
   create,
   update
 }
