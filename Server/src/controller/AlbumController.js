@@ -3,9 +3,12 @@ var HttpStatusCodes = require('http-status-codes');
 const axios = require('axios');
 const requests = require('request').defaults({ encoding: null });
 const {create} = require('ipfs-http-client');
+
 const FormData = require('form-data');
 const secrets= require('../../secrets.js')
 const knex = require('knex')(secrets.database)
+var fs = require('fs'); 
+
 
 
 function binEncode(data) {
@@ -38,7 +41,6 @@ const getById = async (request, response) => {
   // catch(err) {
   //   return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get by id, ${err}`);
   // }
-  console.log("here")
   const authPass = 'BFZq02m1ps';
   const authUser = 'nft';
   const image = await axios({
@@ -50,16 +52,13 @@ const getById = async (request, response) => {
     }
   })
   console.log(image.getOutputStream)
-  var b64Response = Buffer.from(image.data).toString('base64');
-
-  // create an image
-  outputImg = 'data:image/jpeg;base64,'+b64Response;
-  // var img = Buffer.from(b64Response, 'base64');
-
-  // response.setHeader("Content-Type", "image/jpeg");
-  // response.setHeader('Content-Length',image.data.length );
   
-  return response.status(HttpStatusCodes.ACCEPTED).send(outputImg);
+  var b64Response = Buffer.from(image.data);
+  outputImg = 'data:image/jpeg;base64,'+b64Response;
+  var img = Buffer.from(b64Response, 'base64');
+  console.log(img)
+  fs.writeFileSync("data.jpeg", img);
+  return response.status(HttpStatusCodes.ACCEPTED).send(image.data);
 }
 
 const getByUser = async (request, response) => {
@@ -75,14 +74,15 @@ const getByUser = async (request, response) => {
 
 const createImage = async (request, response) => {
   // const { userId } = request.body;
-  const {file1 , file2} = request.files;
-  console.log(file1.data)
-  const form = new FormData();
-  form.append('content_image',  file1.data, file1.name);
-  form.append('style_image', file2.data, file1.name);
-  const apiUrl = 'https://api.nft.inga.technology/';
-  const authPass = 'BFZq02m1ps';
-  const authUser = 'nft';
+  // const {file1 , file2} = request.files;
+  // console.log(file1.data)
+  // fs.writeFileSync("data1.png", file1.data);
+  // const form = new FormData();
+  // form.append('content_image',  file1.data, file1.name);
+  // form.append('style_image', file2.data, file1.name);
+  // const apiUrl = 'https://api.nft.inga.technology/';
+  // const authPass = 'BFZq02m1ps';
+  // const authUser = 'nft';
   
     
         // const result = await axios({
@@ -102,15 +102,15 @@ const createImage = async (request, response) => {
   //         console.log(imagedata);
   //     }
   // });
-    const image = await axios({
-      method: "GET",
-      url: `https://api.nft.inga.technology/style_transfer/result/81ba334f-c7ae-4457-893b-ed1d8f8f2ec5/image_only`,
-      auth : {
-        username: authUser,
-        password: authPass
-      }
-    })
-    return response.status(HttpStatusCodes.ACCEPTED).send(image.data);
+    // const image = await axios({
+    //   method: "GET",
+    //   url: `https://api.nft.inga.technology/style_transfer/result/81ba334f-c7ae-4457-893b-ed1d8f8f2ec5/image_only`,
+    //   auth : {
+    //     username: authUser,
+    //     password: authPass
+    //   }
+    // })
+    // return response.status(HttpStatusCodes.ACCEPTED).send(image.data);
       // if (!error && res.statusCode == 200) {
       //   let imagedata = "data:" + res.headers["content-type"] + ";base64," + new Buffer(body).toString('base64');
       //   console.log(imagedata);
