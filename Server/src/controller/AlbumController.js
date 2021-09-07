@@ -7,7 +7,8 @@ const {create} = require('ipfs-http-client');
 const FormData = require('form-data');
 const secrets= require('../../secrets.js')
 const knex = require('knex')(secrets.database)
-var fs = require('fs'); 
+const fs = require('fs');
+const Path = require('Path');
 
 
 
@@ -41,22 +42,22 @@ const getById = async (request, response) => {
   // catch(err) {
   //   return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get by id, ${err}`);
   // }
+
+  const path = Path.resolve(__dirname, '../../images/', 'data.jpeg')
+  const writer = fs.createWriteStream(path)
   const authPass = 'BFZq02m1ps';
   const authUser = 'nft';
-  const image = await axios({
+  const response = await axios({
     method: "GET",
+    responseType: 'stream',
     url: `https://api.nft.inga.technology/style_transfer/result/81ba334f-c7ae-4457-893b-ed1d8f8f2ec5/image_only`,
-    auth : {
+    auth: {
       username: authUser,
       password: authPass
     }
   })
-  console.log(image.getOutputStream)
+  response.data.pipe(writer)
   
-  var b64Response = Buffer.from(image.data);
-  outputImg = 'data:image/jpeg;base64,'+b64Response;
-  var img = Buffer.from(b64Response, 'base64');
-  console.log(img)
   fs.writeFileSync("data.jpeg", img);
   return response.status(HttpStatusCodes.ACCEPTED).send(image.data);
 }
