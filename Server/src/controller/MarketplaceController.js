@@ -45,7 +45,6 @@ const getAll = async (request, response) => {
 const checkMarket = async (request, response) => {
   try{
     const result = await knex('marketplace').select("*")
-    console.log(result)
     result.map(async(market) => {
         const currentTime = getCurrentTime();
         if(currentTime >= market['end_time']) {

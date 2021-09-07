@@ -4,7 +4,7 @@ var router = express.Router();
 const {
     getById,
     getByUser,
-    create,
+    createImage,
     deleteImage
 } = require('../controller/AlbumController.js')
 
@@ -63,7 +63,7 @@ router.get('/delete/:id', async(request, response) => {
  */
 
 router.post('/create', async(request, response) => {
-    create(request, response);
+    createImage(request, response);
 });
 
 module.exports = router;
