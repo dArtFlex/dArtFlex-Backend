@@ -43,11 +43,10 @@ const getById = async (request, response) => {
   //   return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get by id, ${err}`);
   // }
 
-  const path = Path.resolve(__dirname, '../../images/', 'data.jpeg')
-  const writer = fs.createWriteStream(path)
+  
   const authPass = 'BFZq02m1ps';
   const authUser = 'nft';
-  const response = await axios({
+  const result = await axios({
     method: "GET",
     responseType: 'stream',
     url: `https://api.nft.inga.technology/style_transfer/result/81ba334f-c7ae-4457-893b-ed1d8f8f2ec5/image_only`,
@@ -56,10 +55,10 @@ const getById = async (request, response) => {
       password: authPass
     }
   })
-  response.data.pipe(writer)
+  result.data.pipe(writer)
   
-  fs.writeFileSync("data.jpeg", img);
-  return response.status(HttpStatusCodes.ACCEPTED).send(image.data);
+  // fs.writeFileSync("data.jpeg", img);
+  return response.status(HttpStatusCodes.ACCEPTED).sendFile(path);
 }
 
 const getByUser = async (request, response) => {
@@ -73,78 +72,52 @@ const getByUser = async (request, response) => {
   }
 }
 
+const getAlbumImage = async (request, response) => {
+  const name = request.params.name;
+  const imageData = fs.readFileSync(`./images/${name}.jpeg`);
+  response.writeHead(200, {'Content-Type': 'image/jpeg'});
+  return response.end(imageData,'Base64');
+}
+
 const createImage = async (request, response) => {
-  // const { userId } = request.body;
-  // const {file1 , file2} = request.files;
-  // console.log(file1.data)
-  // fs.writeFileSync("data1.png", file1.data);
-  // const form = new FormData();
-  // form.append('content_image',  file1.data, file1.name);
-  // form.append('style_image', file2.data, file1.name);
-  // const apiUrl = 'https://api.nft.inga.technology/';
-  // const authPass = 'BFZq02m1ps';
-  // const authUser = 'nft';
+  const { userId } = request.body;
+  const {file1 , file2} = request.files;
+  const form = new FormData();
+  form.append('content_image',  file1.data, file1.name);
+  form.append('style_image', file2.data, file1.name);
+  const authPass = 'BFZq02m1ps';
+  const authUser = 'nft';
+  const tmpFileName = file1.name.split('.')[0] + "_" + file2.name.split('.')[0] + "_" + new Date().getTime();
+  const path = Path.resolve(__dirname, '../../images/', `${tmpFileName}.jpeg`)
+  const writer = fs.createWriteStream(path)
+ 
+  const result = await axios({
+    method: "POST",
+    url: 'https://api.nft.inga.technology/style_transfer?priority=0&end_scale=512', 
+    data: form, 
+    headers: form.getHeaders(),
+    auth : {
+      username: authUser,
+      password: authPass
+    }
+  })
   
+  setTimeout(async (result, writer, tmpFileName) => {
+    console.log(path)
+    const image = await axios({
+      method: "GET",
+      responseType: 'stream',
+      url: `https://api.nft.inga.technology/style_transfer/result/${result.data.task_id}/image_only`,
+      auth : {
+        username: authUser,
+        password: authPass
+      }
+    });
+    await image.data.pipe(writer)
     
-        // const result = await axios({
-    //   method: "POST",
-    //   url: 'https://api.nft.inga.technology/style_transfer?priority=0&end_scale=512', 
-    //   data: form, 
-    //   headers: form.getHeaders(),
-    //   auth : {
-    //     username: authUser,
-    //     password: authPass
-    //   }
-    // })
-    // console.log(result.data);
-  //   requests.get('https://api.nft.inga.technology/style_transfer/result/81ba334f-c7ae-4457-893b-ed1d8f8f2ec5/image_only', (error, res, body) => {
-  //     if (!error && res.statusCode == 200) {
-  //         let imagedata = "data:" + res.headers["content-type"] + ";base64," + new Buffer(body).toString('base64');
-  //         console.log(imagedata);
-  //     }
-  // });
-    // const image = await axios({
-    //   method: "GET",
-    //   url: `https://api.nft.inga.technology/style_transfer/result/81ba334f-c7ae-4457-893b-ed1d8f8f2ec5/image_only`,
-    //   auth : {
-    //     username: authUser,
-    //     password: authPass
-    //   }
-    // })
-    // return response.status(HttpStatusCodes.ACCEPTED).send(image.data);
-      // if (!error && res.statusCode == 200) {
-      //   let imagedata = "data:" + res.headers["content-type"] + ";base64," + new Buffer(body).toString('base64');
-      //   console.log(imagedata);
-      // }
-    // console.log(image.body)
-    // const buffer = Buffer.from(image.data,'base64');
-    // return response.status(HttpStatusCodes.ACCEPTED).send(buffer)
-    // setTimeout(async (result) => {
-    //   console.log(result.data);
-    //   const image = await axios({
-    //     method: "GET",
-    //     url: `https://api.nft.inga.technology/style_transfer/result/81ba334f-c7ae-4457-893b-ed1d8f8f2ec5/image_only`,
-    //     auth : {
-    //       username: authUser,
-    //       password: authPass
-    //     }
-    //   });
-    //   console.log(image);
-    // },1500, result);
+    return response.status(HttpStatusCodes.ACCEPTED).send(tmpFileName);
+  },40000, result, writer, tmpFileName);
     
-
-  // try{
-
-  //   const result = await knex('album').where("user_id", userId).select("*");
-  //   if(result.length >= 20) {
-  //     return response.status(HttpStatusCodes.BAD_REQUEST).send("There are already 20 images in the Album");
-  //   }
-  //   const id =  await knex('album').insert({ "user_id" : userId, "image_url": imageUrl }).returning('id');
-  //   response.status(HttpStatusCodes.ACCEPTED).send(id);
-  // }
-  // catch(err) {
-  //   return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error create album, ${err}`);
-  // }
 }
 
 const deleteImage = async (request, response) => {
@@ -161,5 +134,6 @@ module.exports = {
   getById,
   getByUser,
   createImage,
-  deleteImage
+  deleteImage,
+  getAlbumImage
 }

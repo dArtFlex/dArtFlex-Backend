@@ -5,6 +5,7 @@ const {
     getById,
     getByUser,
     createImage,
+    getAlbumImage,
     deleteImage
 } = require('../controller/AlbumController.js')
 
@@ -15,6 +16,10 @@ router.get('/get/:id', async(request, response) => {
 
 router.get('/get_by_user/:id', async(request, response) => {
     getByUser(request, response);
+});
+
+router.get('/get_temp/:name', async(request, response) => {
+    getAlbumImage(request, response);
 });
 
 router.get('/delete/:id', async(request, response) => {
