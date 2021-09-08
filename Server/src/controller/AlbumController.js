@@ -8,7 +8,7 @@ const FormData = require('form-data');
 const secrets= require('../../secrets.js')
 const knex = require('knex')(secrets.database)
 const fs = require('fs');
-const Path = require('Path');
+const Path = require('path');
 
 
 
