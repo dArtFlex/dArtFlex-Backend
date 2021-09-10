@@ -12,52 +12,18 @@ const Path = require('path');
 
 
 
-function binEncode(data) {
-  var binArray = []
-  var datEncode = "";
-
-  for (i=0; i < data.length; i++) {
-      binArray.push(data[i].charCodeAt(0).toString(2)); 
-  } 
-  for (j=0; j < binArray.length; j++) {
-      var pad = padding_left(binArray[j], '0', 8);
-      datEncode += pad + ' '; 
-  }
-  function padding_left(s, c, n) { if (! s || ! c || s.length >= n) {
-      return s;
-  }
-  var max = (n - s.length)/c.length;
-  for (var i = 0; i < max; i++) {
-      s = c + s; } return s;
-  }
-  return binArray;
-}
 
 const getById = async (request, response) => {
-  // const id = parseInt(request.params.id)
-  // try{
-  //   const result = await knex('album').where("id", id).select("*")
-  //   response.status(HttpStatusCodes.ACCEPTED).send(result);
-  // }
-  // catch(err) {
-  //   return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get by id, ${err}`);
-  // }
+  const id = parseInt(request.params.id)
+  try{
+    const result = await knex('album').where("id", id).select("*")
+    response.status(HttpStatusCodes.ACCEPTED).send(result);
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get by id, ${err}`);
+  }
 
   
-  const authPass = 'BFZq02m1ps';
-  const authUser = 'nft';
-  const result = await axios({
-    method: "GET",
-    responseType: 'stream',
-    url: `https://api.nft.inga.technology/style_transfer/result/81ba334f-c7ae-4457-893b-ed1d8f8f2ec5/image_only`,
-    auth: {
-      username: authUser,
-      password: authPass
-    }
-  })
-  result.data.pipe(writer)
-  
-  return response.status(HttpStatusCodes.ACCEPTED).sendFile(path);
 }
 
 const getByUser = async (request, response) => {
@@ -119,6 +85,20 @@ const createImage = async (request, response) => {
     
 }
 
+const save = async (request, response) => {
+  const { userId, imageUrl } = request.body
+  try{
+    const result = await knex('album').where("user_id", userId).select("*");
+    if(result.length >= 20) {
+      return response.status(HttpStatusCodes.BAD_REQUEST).send("There are already 20 images in the Album");
+    }
+    const id =  await knex('album').insert({ "user_id" : userId, "image_url": imageUrl }).returning('id');
+    response.status(HttpStatusCodes.ACCEPTED).send(id);
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error create album, ${err}`);
+  }
+}
 const deleteImage = async (request, response) => {
   const { id } = request.body
   try{
@@ -133,6 +113,7 @@ module.exports = {
   getById,
   getByUser,
   createImage,
+  save,
   deleteImage,
   getAlbumImage
 }

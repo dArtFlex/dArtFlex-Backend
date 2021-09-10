@@ -5,6 +5,7 @@ const {
     getById,
     getByUser,
     createImage,
+    save,
     getAlbumImage,
     deleteImage
 } = require('../controller/AlbumController.js')
@@ -71,4 +72,8 @@ router.post('/create', async(request, response) => {
     createImage(request, response);
 });
 
+
+router.post('/save', async(request, response) => {
+    save(request, response);
+});
 module.exports = router;
