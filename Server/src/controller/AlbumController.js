@@ -57,7 +57,6 @@ const getById = async (request, response) => {
   })
   result.data.pipe(writer)
   
-  // fs.writeFileSync("data.jpeg", img);
   return response.status(HttpStatusCodes.ACCEPTED).sendFile(path);
 }
 
@@ -116,7 +115,7 @@ const createImage = async (request, response) => {
     await image.data.pipe(writer)
     
     return response.status(HttpStatusCodes.ACCEPTED).send(tmpFileName);
-  },40000, result, writer, tmpFileName);
+  },100000, result, writer, tmpFileName);
     
 }
 

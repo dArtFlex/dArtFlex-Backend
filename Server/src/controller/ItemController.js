@@ -111,15 +111,20 @@ const getSalesDataByUser = async (request, response) => {
         item['image_name'] = ''; 
       }
       let highestBid = [];
+      let listedBid = [];
       if(marketplace.length > 0 )
       { 
         if(!marketplace[0]['sold']) {
           highestBid = await knex('bid').where('market_id', marketplace[0]['id']).andWhere("status", "pending").select("*");
         }
+        if(marketplace[0].sold && item.lock) {
+          listedBid = await knex('bid').where('market_id', marketplace[0]['id']).andWhere("status", "listed").select("*");
+        }
       }
       const highestOffer  = await knex('bid').where("item_id", item.id).andWhere('status', 'like', 'offered').select("*")
       item['highest_offer'] = highestOffer;
       item['highest_bid'] = highestBid;
+      item['listed_bid'] = listedBid;
       item['marketplace'] = marketplace;
       if(!(highestOffer.length == 0 && highestBid.length == 0 && marketplace.length == 0))
         return item;
