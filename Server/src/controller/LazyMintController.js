@@ -34,7 +34,7 @@ const signTypes = {
 	Sign: []
 };
 
-const ERC721Types = {
+const ERC1155Types = {
 	Part: [
 		{name: 'account', type: 'address'},
 		{name: 'value', type: 'uint96'}
@@ -148,7 +148,7 @@ const generateLazyMint = async (request, response) => {
   const tokenId = await generateTokenId(creator);
   console.log(tokenId); 
   const form = {
-    	"@type": "ERC721",
+    	"@type": "ERC1155",
 		contract: contract,
 		creators: [{ account: creator, value: "10000" }],
 		royalties: [],
@@ -165,7 +165,7 @@ const generateLazyMint = async (request, response) => {
 		},
 		"Mint721",
 		{ ...form, tokenURI: uri },
-		ERC721Types
+		ERC1155Types
 	);
 	console.log(creator, data);
   const signature = await signTypedData(creator, data);
@@ -181,7 +181,7 @@ function createOrder(maker, contract, tokenId, uri, erc20, price, signature) {
 		maker: maker,
 		make: {
 			"assetType": {
-				"assetClass": signature == "0x"? "ERC721" : "ERC721_LAZY",
+				"assetClass": signature == "0x"? "ERC1155" : "ERC1155_LAZY",
 				"contract": contract,
 				"tokenId": tokenId,
 				"uri": uri,
@@ -209,9 +209,9 @@ function createOrder(maker, contract, tokenId, uri, erc20, price, signature) {
 const random = (min, max) => Math.floor(Math.random() * (max - min)) + min
 
 function enc(form) {
-	if (form.assetClass == "ERC721_LAZY")
+	if (form.assetClass == "ERC1155_LAZY")
 		return web3.eth.abi.encodeParameters(lazyMintNftEncodeParameters, [form.contract, [form.tokenId, form.uri, [[form.creator, "10000"]], [], [form.signature]]]);
-	if (form.assetClass == "ERC721")
+	if (form.assetClass == "ERC1155")
 		return web3.eth.abi.encodeParameters(nftEncodeParameters, [form.contract, form.tokenId]);
 	if (form.assetClass == "ERC20" ) {
 		return web3.eth.abi.encodeParameter("address", form.contract);
@@ -307,12 +307,6 @@ const getTxHash = async (request, response) => {
 				
 	}
 	return response.status(HttpStatusCodes.ACCEPTED).send(logs);
-	// if (logs[logs.length - 1 ].topics[0] == topic) {
-	// 	const hexData = logs[logs.length - 1 ].data;
-	// 	const from = hexData.slice(154, 194);
-	// 	const to = hexData.slice(218, 258);
-	// 	return response.status(HttpStatusCodes.ACCEPTED).send({from, to, hexData});
-	// }
 	
 }
 module.exports = {

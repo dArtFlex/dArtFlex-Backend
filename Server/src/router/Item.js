@@ -256,7 +256,7 @@ router.get('/get_all', async(request, response) => {
  *               items:
  *                 $ref: '#/components/schemas/Item'
  */
- router.get('/get_auction', async(request, response) => {
+ router.get('/get_sold', async(request, response) => {
     getSold(request, response);
 })
 
