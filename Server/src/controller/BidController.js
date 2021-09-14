@@ -25,7 +25,7 @@ const getById = async (request, response) => {
 const getByMarketId = async (request, response) => {
   const id = parseInt(request.params.id)
   try{
-    const items = await knex('bid').where("market_id", id).select("*");
+    const items = await knex('bid').where("market_id", id).orderBy('created_at', 'DESC').select("*");
     response.status(HttpStatusCodes.ACCEPTED).send(items);
   }
   catch(err) {

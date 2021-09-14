@@ -100,7 +100,7 @@ const save = async (request, response) => {
   }
 }
 const deleteImage = async (request, response) => {
-  const { id } = request.body
+  const id = parseInt(request.params.id)
   try{
     await knex('album').where("id", id).del();
     response.status(HttpStatusCodes.ACCEPTED).send("image removed successfully");

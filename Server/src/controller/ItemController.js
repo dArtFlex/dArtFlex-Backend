@@ -138,6 +138,41 @@ const getSalesDataByUser = async (request, response) => {
 }
 
 
+const getBidAndOfferDataByUser = async (request, response) => {
+  const userId = request.params.id
+  try{
+    const bids = await knex('bid').whereIn('status', ['pending', 'offered']).andWhere("user_id", userId).select("*").orderBy('created_at', 'DESC');
+    let data = [];
+    data = await Promise.all(bids.map(async(bid) => {
+      const marketplace = await knex('marketplace').where('id', bid['market_id']).select("*");
+      let itemData = await knex('item').where('id', bid['item_id']).select("*");
+      const metadataId = itemData[0]['uri'].split('get/').pop();
+      const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).select("*");
+      if(imageUrl.length > 0){
+        itemData[0]['image_name'] = imageUrl[0]['name']; 
+        itemData[0]['image_url'] = imageUrl[0]['image'];
+      }
+      else {
+        itemData[0]['image_url'] = '';
+        itemData[0]['image_name'] = ''; 
+      }
+      itemData[0]['highest_bid'] = [];
+      itemData[0]['highest_offer'] = [];
+      if(bid.status == "pending" )
+        itemData[0]['highest_bid'].push(bid);
+      else 
+        itemData[0]['highest_offer'].push(bid);
+      itemData[0]['marketplace'] = marketplace;
+
+      return itemData[0];
+    }));
+    response.status(HttpStatusCodes.ACCEPTED).send(data.filter(_data => _data!=null));
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get item by creator, ${err}`);
+  }
+}
+
 const getAuction = async (request, response) => {
   try{
     const {page, limit} = request.query;
@@ -240,6 +275,33 @@ const getSold = async (request, response) => {
         }
       }
       return ;  
+    }));
+    response.status(HttpStatusCodes.ACCEPTED).send(paginate(data.filter(_data => _data!=null), limit, page));
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get item by creator, ${err}`);
+  }
+}
+
+const getFeatured = async (request, response) => {
+  try{
+    const {page, limit} = request.query;
+    const items = await knex('item').select("*").orderBy('created_at', 'DESC');
+    let data = [];
+    data = await Promise.all(items.map(async(item) => {
+      const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
+      const metadataId = item['uri'].split('get/').pop();
+      const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).select("*");
+      if(imageUrl.length > 0){
+        item['image'] = imageUrl; 
+      }
+      else {
+        item['image'] = [];
+      }
+      item['marketplace'] = marketplace;
+      const userData = await knex('users').where('id', item.owner);
+      item['user'] = userData;
+      return item;  
     }));
     response.status(HttpStatusCodes.ACCEPTED).send(paginate(data.filter(_data => _data!=null), limit, page));
   }
@@ -351,6 +413,8 @@ module.exports = {
   getByOwner,
   getByCreator,
   getSalesDataByUser,
+  getBidAndOfferDataByUser,
+  getFeatured,
   getAll,
   getBuyNow,
   getSold,
