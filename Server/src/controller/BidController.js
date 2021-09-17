@@ -393,7 +393,7 @@ const withdrawBid = async (request, response) => {
   try{
     const data = await knex('bid').where('id', id).returning('*');
     const prevHighestBid = await knex('bid').where("market_id", data[0]['market_id']).andWhere('status', 'canceled').select('*').orderBy('bid_amount', 'DESC').limit(1);
-
+    console.log(prevHighestBid);
     if(prevHighestBid.length > 0) {
       await knex('bid').where('id', prevHighestBid[0]['id']).update({"status": "pending"});
       await knex('marketplace').where('id', data[0]['market_id']).update({"current_price": prevHighestBid[0]['bid_amount']});

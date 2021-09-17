@@ -30,10 +30,12 @@ var RouterOrder = require('./src/router/Order');
 var RouterMarketplace = require('./src/router/Marketplace');
 var RouterBid = require('./src/router/Bid');
 var RouterActivity = require('./src/router/Activity');
+var RouterTokenPrice = require('./src/router/TokenPrice');
 var RouterSuperAdmin = require('./src/router/SuperAdmin');
 var {watchEtherTransfers} = require('./src/controller/SubscribeController');
 var {getNotificationByUser, updateNotificationStatus} = require('./src/controller/NotificationController');
 var {checkMarket} = require('./src/controller/MarketplaceController');
+var {updateTokenPrice} = require('./src/controller/TokenPriceController');
 const { request } = require('express');
 server.listen(port, () => console.log(`Listening on port ${port}...`));
 
@@ -111,12 +113,14 @@ app.use('/api/order', RouterOrder);
 app.use('/api/marketplace', RouterMarketplace);
 app.use('/api/bid', RouterBid);
 app.use('/api/activity', RouterActivity);   
+app.use('/api/token_price', RouterTokenPrice);
 app.use('/api/super_admin', RouterSuperAdmin);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
 
 watchEtherTransfers();
 
-cron.schedule('*/5 * * * *', function () {
+cron.schedule('*/1 * * * *', function () {
 	checkMarket();
+    updateTokenPrice();
 })
 // checkMarket();

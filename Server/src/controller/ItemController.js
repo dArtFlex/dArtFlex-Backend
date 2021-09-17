@@ -21,6 +21,10 @@ const getById = async (request, response) => {
       const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
       item['hashtag'] = hashtag;
       item['marketplace'] = marketplace;
+      if(!item.lazymint)
+        item['etherscan'] = `https://rinkeby.etherscan.io/token/${item.contract}?a=${item['token_id']}#inventory`;
+      else 
+        item['etherscan'] = ``;
       return item;
     }));
     response.status(HttpStatusCodes.ACCEPTED).send(data);
@@ -42,6 +46,10 @@ const getByTokenId = async (request, response) => {
       const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
       item['hashtag'] = hashtag;
       item['marketplace'] = marketplace;
+      if(!item.lazymint)
+        item['etherscan'] = `https://rinkeby.etherscan.io/token/${item.contract}?a=${item['token_id']}#inventory`;
+      else 
+        item['etherscan'] = ``;
       return item;
     }));
     response.status(HttpStatusCodes.ACCEPTED).send(data);
@@ -63,6 +71,10 @@ const getByOwner = async (request, response) => {
       const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
       item['hashtag'] = hashtag;
       item['marketplace'] = marketplace;
+      if(!item.lazymint)
+        item['etherscan'] = `https://rinkeby.etherscan.io/token/${item.contract}?a=${item['token_id']}#inventory`;
+      else 
+        item['etherscan'] = ``;
       return item;
     }));
     response.status(HttpStatusCodes.ACCEPTED).send(data);
@@ -84,6 +96,10 @@ const getByCreator = async (request, response) => {
       const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
       item['hashtag'] = hashtag;
       item['marketplace'] = marketplace;
+      if(!item.lazymint)
+        item['etherscan'] = `https://rinkeby.etherscan.io/token/${item.contract}?a=${item['token_id']}#inventory`;
+      else 
+        item['etherscan'] = ``;
       return item;
     }));
     response.status(HttpStatusCodes.ACCEPTED).send(data);
@@ -126,6 +142,10 @@ const getSalesDataByUser = async (request, response) => {
       item['highest_bid'] = highestBid;
       item['listed_bid'] = listedBid;
       item['marketplace'] = marketplace;
+      if(!item.lazymint)
+        item['etherscan'] = `https://rinkeby.etherscan.io/token/${item.contract}?a=${item['token_id']}#inventory`;
+      else 
+        item['etherscan'] = ``;
       if(!(highestOffer.length == 0 && highestBid.length == 0 && marketplace.length == 0))
         return item;
       return ;  
@@ -164,6 +184,11 @@ const getBidAndOfferDataByUser = async (request, response) => {
         itemData[0]['highest_offer'].push(bid);
       itemData[0]['marketplace'] = marketplace;
 
+      if(itemData[0].lazymint)
+        itemData[0]['etherscan'] = `https://rinkeby.etherscan.io/token/${itemData[0].contract}?a=${itemData[0]['token_id']}#inventory`;
+      else 
+        itemData[0]['etherscan'] = ``;
+
       return itemData[0];
     }));
     response.status(HttpStatusCodes.ACCEPTED).send(data.filter(_data => _data!=null));
@@ -189,6 +214,12 @@ const getAuction = async (request, response) => {
         item['image'] = [];
       }
       item['marketplace'] = marketplace;
+
+      if(!item.lazymint)
+        item['etherscan'] = `https://rinkeby.etherscan.io/token/${item.contract}?a=${item['token_id']}#inventory`;
+      else 
+        item['etherscan'] = ``;
+
       if(marketplace.length > 0 )
       { 
         if(!marketplace[0]['sold'] && marketplace[0]['type'] == "auction") {
@@ -227,6 +258,12 @@ const getBuyNow = async (request, response) => {
         item['image'] = [];
       }
       item['marketplace'] = marketplace;
+
+      if(!item.lazymint)
+        item['etherscan'] = `https://rinkeby.etherscan.io/token/${item.contract}?a=${item['token_id']}#inventory`;
+      else 
+        item['etherscan'] = ``;
+
       if(marketplace.length > 0 )
       { 
         if(!marketplace[0]['sold'] && marketplace[0]['type'] == "instant_buy") {
@@ -265,6 +302,12 @@ const getSold = async (request, response) => {
         item['image'] = [];
       }
       item['marketplace'] = marketplace;
+
+      if(!item.lazymint)
+        item['etherscan'] = `https://rinkeby.etherscan.io/token/${item.contract}?a=${item['token_id']}#inventory`;
+      else 
+        item['etherscan'] = ``;
+
       if(marketplace.length > 0 )
       { 
         if(marketplace[0]['sold']) {
@@ -299,6 +342,12 @@ const getFeatured = async (request, response) => {
         item['image'] = [];
       }
       item['marketplace'] = marketplace;
+
+      if(!item.lazymint)
+        item['etherscan'] = `https://rinkeby.etherscan.io/token/${item.contract}?a=${item['token_id']}#inventory`;
+      else 
+        item['etherscan'] = ``;
+
       const userData = await knex('users').where('id', item.owner);
       item['user'] = userData;
       return item;  
@@ -320,6 +369,12 @@ const getAll = async (request, response) => {
       const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
       item['hashtag'] = hashtag;
       item['marketplace'] = marketplace;
+
+      if(!item.lazymint)
+        item['etherscan'] = `https://rinkeby.etherscan.io/token/${item.contract}?a=${item['token_id']}#inventory`;
+      else 
+        item['etherscan'] = ``;
+
       return item;
     }));
     response.status(HttpStatusCodes.ACCEPTED).send(data);
