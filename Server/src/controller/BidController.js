@@ -288,7 +288,7 @@ const placeBid = async (request, response) => {
       const id = await knex('bid').insert(data).returning('id');
       await knex('marketplace').where('id', marketId).update({"current_price": bidAmount});
       if((result[0]['end_time'] - getCurrentTime()) <= 900000) {
-        await knex('marketplace').where('id', marketId).update({"end_time": result[0]['end_time'] + 900000});
+        await knex('marketplace').where('id', marketId).update({"end_time": parseInt(result[0]['end_time']) + 900000});
       }
       const activityId = await knex('activity').insert({
         'from': userId,

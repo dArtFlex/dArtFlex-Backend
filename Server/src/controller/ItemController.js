@@ -9,6 +9,13 @@ function paginate(array, page_size, page_number) {
   return array.slice((page_number - 1) * page_size, page_number * page_size);
 }
 
+function getCurrentTime() {
+  const d = new Date();
+  const n = d.getTime();
+  return n;
+}
+
+
 const getById = async (request, response) => {
   const id = parseInt(request.params.id);
   const {page, limit} = request.query;
@@ -200,21 +207,35 @@ const getBidAndOfferDataByUser = async (request, response) => {
 
 const getAuction = async (request, response) => {
   try{
-    const {page, limit} = request.query;
+    const {page, limit, search, sortBy, filters} = request.query;
+    const parsedFilter = JSON.parse(filters);
+    const hashtags = parsedFilter['hashtag'];
+    const priceFrom = parsedFilter['priceFrom'];
+    const priceTo = parsedFilter['priceTo'];
+    const hotOnly = parsedFilter['hotOnly'];
+
     const items = await knex('item').select("*").orderBy('created_at', 'DESC');
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
       const metadataId = item['uri'].split('get/').pop();
-      const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).select("*");
-      if(imageUrl.length > 0){
-        item['image'] = imageUrl; 
+      const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).andWhere('name', 'like', `%${search}%`).select("*");
+      let hashtag = [];
+      if(hashtags.length > 0) {
+        hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').whereIn('hashtag.name', hashtags).andWhere('hashtag_item.item_id', item.id);
+        if(hashtag.length == 0)
+          return ;
       }
-      else {
-        item['image'] = [];
+      else
+        hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
+      
+      if(imageUrl.length == 0){
+        return ;
       }
+      item['hashtag'] = hashtag;
+      item['image'] = imageUrl; 
       item['marketplace'] = marketplace;
-
+      
       if(!item.lazymint)
         item['etherscan'] = `https://rinkeby.etherscan.io/token/${item.contract}?a=${item['token_id']}#inventory`;
       else 
@@ -223,7 +244,11 @@ const getAuction = async (request, response) => {
       if(marketplace.length > 0 )
       { 
         if(!marketplace[0]['sold'] && marketplace[0]['type'] == "auction") {
-          console.log("here")
+          if(hotOnly) {
+            if((marketplace[0]['end_time'] - getCurrentTime()) > 900000 && (marketplace[0]['end_time'] - getCurrentTime()) < 0) {
+              return ;
+            }
+          }
           const bidData = await knex('bid').where('market_id', marketplace[0]['id']).andWhere('status','listed').select("*");
           item['user'] = [];
           if(bidData.length > 0) {
@@ -244,19 +269,33 @@ const getAuction = async (request, response) => {
 
 const getBuyNow = async (request, response) => {
   try{
-    const {page, limit} = request.query;
+    const {page, limit, search, sortBy, filters} = request.query;
+    const parsedFilter = JSON.parse(filters);
+    const hashtags = parsedFilter['hashtag'];
+    const priceFrom = parsedFilter['priceFrom'];
+    const priceTo = parsedFilter['priceTo'];
+
     const items = await knex('item').select("*").orderBy('created_at', 'DESC');
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
       const metadataId = item['uri'].split('get/').pop();
-      const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).select("*");
-      if(imageUrl.length > 0){
-        item['image'] = imageUrl; 
+      const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).andWhere('name', 'like', `%${search}%`).select("*");
+      let hashtag = [];
+      if(hashtags.length > 0) {
+        hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').whereIn('hashtag.name', hashtags).andWhere('hashtag_item.item_id', item.id);
+        if(hashtag.length == 0)
+          return ;
       }
-      else {
-        item['image'] = [];
+      else
+        hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
+      
+      if(imageUrl.length == 0){
+        return ;
       }
+      item['hashtag'] = hashtag;
+      item['image'] = imageUrl; 
+
       item['marketplace'] = marketplace;
 
       if(!item.lazymint)
@@ -288,19 +327,33 @@ const getBuyNow = async (request, response) => {
 
 const getSold = async (request, response) => {
   try{
-    const {page, limit} = request.query;
+    const {page, limit, search, sortBy, filters} = request.query;
+    const parsedFilter = JSON.parse(filters);
+    const hashtags = parsedFilter['hashtag'];
+    const priceFrom = parsedFilter['priceFrom'];
+    const priceTo = parsedFilter['priceTo'];
+
     const items = await knex('item').select("*").orderBy('created_at', 'DESC');
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
       const metadataId = item['uri'].split('get/').pop();
-      const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).select("*");
-      if(imageUrl.length > 0){
-        item['image'] = imageUrl; 
+      const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).andWhere('name', 'like', `%${search}%`).select("*");
+      let hashtag = [];
+      if(hashtags.length > 0) {
+        hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').whereIn('hashtag.name', hashtags).andWhere('hashtag_item.item_id', item.id);
+        if(hashtag.length == 0)
+          return ;
       }
-      else {
-        item['image'] = [];
+      else
+        hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
+      
+      if(imageUrl.length == 0){
+        return ;
       }
+      item['hashtag'] = hashtag;
+      item['image'] = imageUrl; 
+
       item['marketplace'] = marketplace;
 
       if(!item.lazymint)
@@ -328,19 +381,33 @@ const getSold = async (request, response) => {
 
 const getFeatured = async (request, response) => {
   try{
-    const {page, limit} = request.query;
+    const {page, limit, search, sortBy, filters} = request.query;
+    const parsedFilter = JSON.parse(filters);
+    const hashtags = parsedFilter['hashtag'];
+    const priceFrom = parsedFilter['priceFrom'];
+    const priceTo = parsedFilter['priceTo'];
+    
     const items = await knex('item').select("*").orderBy('created_at', 'DESC');
     let data = [];
     data = await Promise.all(items.map(async(item) => {
       const marketplace = await knex('marketplace').where('item_id', item.id).orderBy('id', 'DESC').limit(1).select("*");
       const metadataId = item['uri'].split('get/').pop();
-      const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).select("*");
-      if(imageUrl.length > 0){
-        item['image'] = imageUrl; 
+      const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).andWhere('name', 'like', `%${search}%`).select("*");
+      let hashtag = [];
+      if(hashtags.length > 0) {
+        hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').whereIn('hashtag.name', hashtags).andWhere('hashtag_item.item_id', item.id);
+        if(hashtag.length == 0)
+          return ;
       }
-      else {
-        item['image'] = [];
+      else
+        hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').where('hashtag_item.item_id', item.id);
+      
+      if(imageUrl.length == 0){
+        return ;
       }
+      item['hashtag'] = hashtag;
+      item['image'] = imageUrl; 
+      
       item['marketplace'] = marketplace;
 
       if(!item.lazymint)
