@@ -70,11 +70,12 @@ const specs = swaggerJsDoc(options);
 io.on('connection',async function(socket){
     const userId =socket.handshake.query.userId;
     const data = await getNotificationByUser(parseInt(userId));
-    console.log(data);
-    socket.emit('notification', data);
+    if (data.length > 0) {
+        if(socket.handshake.query.userId == data[0]['user_id'])
+            socket.emit('notification', data);
+    }
 
     socket.on('message', function(data){
-        console.log(data)
         updateNotificationStatus(data.id, data.read);
     });
 });
