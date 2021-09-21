@@ -217,7 +217,7 @@ const placeBid = async (request, response) => {
       "status": "pending"
     };
 
-    const highestBid = await knex('bid').where("market_id", marketId).andWhere('status', 'pending').select('*').orderBy('bid_amount', 'DESC').limit(1);
+    const highestBid = await knex('bid').where("market_id", marketId).andWhere('status', 'pending').select('*').limit(1);
     if(highestBid.length > 0)
     {
       const _highestBid = new BN(highestBid[0]['bid_amount']);
@@ -342,7 +342,7 @@ const makeOffer = async (request, response) => {
   };
 
   try{
-    const currentOffer = await knex('bid').where('item_id', itemId).andWhere('status','offered').select('*').orderBy('bid_amount', 'DESC').limit(1);;
+    const currentOffer = await knex('bid').where('item_id', itemId).andWhere('status','offered').select('*').limit(1);;
     if(currentOffer.length > 0) {
       const _currentOffer = new BN(currentOffer[0]['bid_amount']);
       const _bidAmount = new BN(bidAmount);
@@ -392,7 +392,7 @@ const withdrawBid = async (request, response) => {
 
   try{
     const data = await knex('bid').where('id', id).returning('*');
-    const prevHighestBid = await knex('bid').where("market_id", data[0]['market_id']).andWhere('status', 'canceled').select('*').orderBy('bid_amount', 'DESC').limit(1);
+    const prevHighestBid = await knex('bid').where("market_id", data[0]['market_id']).andWhere('status', 'canceled').select('*').orderBy('created_at', 'DESC').limit(1);
     console.log(prevHighestBid);
     if(prevHighestBid.length > 0) {
       await knex('bid').where('id', prevHighestBid[0]['id']).update({"status": "pending"});
@@ -433,7 +433,7 @@ const withdrawOffer = async (request, response) => {
 
   try{
     const data = await knex('bid').where('id', id).returning('*');
-    const prevHighestOffer = await knex('bid').where("item_id", data[0]['item_id']).andWhere('status', 'canceled offer').select('*').orderBy('bid_amount', 'DESC').limit(1);
+    const prevHighestOffer = await knex('bid').where("item_id", data[0]['item_id']).andWhere('status', 'canceled offer').select('*').orderBy('created_at', 'DESC').limit(1);
 
     if(prevHighestOffer.length > 0) {
       await knex('bid').where('id', prevHighestOffer[0]['id']).update({"status": "offered"});
