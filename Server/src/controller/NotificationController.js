@@ -7,6 +7,7 @@ const getNotificationByUser = async (userId) => {
   try{
 
     const notifications = await knex('notification').where("user_id", userId).select("*");
+    console.log('notifications', notifications);
     let data = [];
     data = await Promise.all(notifications.map(async(notification) => {
       const item = await knex('item').where('id', notification['item_id']);
