@@ -2,6 +2,9 @@ var express = require('express');
 var HttpStatusCodes = require('http-status-codes');
 const secrets= require('../../secrets.js')
 const knex = require('knex')(secrets.database)
+const BN = require('bn.js');
+
+
 
 // const {getNotificationById} = require('./NotificationController');
 function paginate(array, page_size, page_number) {
@@ -249,6 +252,19 @@ const getAuction = async (request, response) => {
               return ;
             }
           }
+          const startPrice = marketplace[0]['current_price'] > 0 ? marketplace[0]['current_price'] : marketplace[0]['start_price'];
+          const _startPrice = new BN(startPrice);
+          const _priceFrom = new BN(priceFrom);
+          const _priceTo = new BN(priceTo);
+
+          if(
+            (_priceFrom.gtn(0) && _priceTo.eqn(0) && _startPrice.lt(_priceFrom)) || 
+            (_priceFrom.eqn(0) && _priceTo.gtn(0) && _startPrice.gt(_priceTo)) || 
+            (_priceFrom.gtn(0) && _priceTo.gtn(0) && _startPrice.lt(_priceFrom)) || 
+            (_priceFrom.gtn(0) && _priceTo.gtn(0) && _startPrice.gt(_priceTo))
+          ){
+            return;
+          }
           const bidData = await knex('bid').where('market_id', marketplace[0]['id']).andWhere('status','listed').select("*");
           item['user'] = [];
           if(bidData.length > 0) {
@@ -306,7 +322,20 @@ const getBuyNow = async (request, response) => {
       if(marketplace.length > 0 )
       { 
         if(!marketplace[0]['sold'] && marketplace[0]['type'] == "instant_buy") {
-          console.log("here")
+          const startPrice = marketplace[0]['current_price'] > 0 ? marketplace[0]['current_price'] : marketplace[0]['start_price'];
+          const _startPrice = new BN(startPrice);
+          const _priceFrom = new BN(priceFrom);
+          const _priceTo = new BN(priceTo);
+
+          if(
+            (_priceFrom.gtn(0) && _priceTo.eqn(0) && _startPrice.lt(_priceFrom)) || 
+            (_priceFrom.eqn(0) && _priceTo.gtn(0) && _startPrice.gt(_priceTo)) || 
+            (_priceFrom.gtn(0) && _priceTo.gtn(0) && _startPrice.lt(_priceFrom)) || 
+            (_priceFrom.gtn(0) && _priceTo.gtn(0) && _startPrice.gt(_priceTo))
+          ){
+            return;
+          }
+
           const bidData = await knex('bid').where('market_id', marketplace[0]['id']).andWhere('status','listed').select("*");
           item['user'] = [];
           if(bidData.length > 0) {
@@ -316,7 +345,7 @@ const getBuyNow = async (request, response) => {
           return item;
         }
       }
-      return ;  
+      return ;
     }));
     response.status(HttpStatusCodes.ACCEPTED).send(paginate(data.filter(_data => _data!=null), limit, page));
   }
@@ -364,7 +393,20 @@ const getSold = async (request, response) => {
       if(marketplace.length > 0 )
       { 
         if(marketplace[0]['sold']) {
-          console.log("here")
+          const startPrice = marketplace[0]['current_price'] > 0 ? marketplace[0]['current_price'] : marketplace[0]['start_price'];
+          const _startPrice = new BN(startPrice);
+          const _priceFrom = new BN(priceFrom);
+          const _priceTo = new BN(priceTo);
+
+          if(
+            (_priceFrom.gtn(0) && _priceTo.eqn(0) && _startPrice.lt(_priceFrom)) || 
+            (_priceFrom.eqn(0) && _priceTo.gtn(0) && _startPrice.gt(_priceTo)) || 
+            (_priceFrom.gtn(0) && _priceTo.gtn(0) && _startPrice.lt(_priceFrom)) || 
+            (_priceFrom.gtn(0) && _priceTo.gtn(0) && _startPrice.gt(_priceTo))
+          ){
+            return;
+          }
+
           const userData = await knex('users').where('id', item['owner']);
           item['user'] = userData;
           return item;
@@ -396,7 +438,7 @@ const getFeatured = async (request, response) => {
       let hashtag = [];
       if(hashtags.length > 0) {
         hashtag = await knex('hashtag_item').innerJoin('hashtag', 'hashtag_item.hashtag_id', 'hashtag.id').whereIn('hashtag.name', hashtags).andWhere('hashtag_item.item_id', item.id);
-        if(hashtag.length == 0)
+        if(hashtag.length == 0) 
           return ;
       }
       else
@@ -410,6 +452,21 @@ const getFeatured = async (request, response) => {
       
       item['marketplace'] = marketplace;
 
+      if(marketplace.length > 0) {
+        const startPrice = marketplace[0]['current_price'] > 0 ? marketplace[0]['current_price'] : marketplace[0]['start_price'];
+        const _startPrice = new BN(startPrice);
+        const _priceFrom = new BN(priceFrom);
+        const _priceTo = new BN(priceTo);
+
+        if(
+          (_priceFrom.gtn(0) && _priceTo.eqn(0) && _startPrice.lt(_priceFrom)) || 
+          (_priceFrom.eqn(0) && _priceTo.gtn(0) && _startPrice.gt(_priceTo)) || 
+          (_priceFrom.gtn(0) && _priceTo.gtn(0) && _startPrice.lt(_priceFrom)) || 
+          (_priceFrom.gtn(0) && _priceTo.gtn(0) && _startPrice.gt(_priceTo))
+        ){
+          return;
+        }
+      }
       if(!item.lazymint)
         item['etherscan'] = `https://rinkeby.etherscan.io/token/${item.contract}?a=${item['token_id']}#inventory`;
       else 
