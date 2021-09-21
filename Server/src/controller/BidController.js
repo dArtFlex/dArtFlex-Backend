@@ -187,7 +187,9 @@ const changePrice = async (request, response) => {
 }
 
 const placeBid = async (request, response) => {
+  const keys = request.io.sockets.sockets.keys();
   
+  // console.log(request.io.sockets.server.eio.clients)
   const { orderId, itemId , userId , marketId, bidAmount } = request.body;
   if (!orderId || !itemId || !userId  || !marketId || !bidAmount) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
@@ -233,8 +235,11 @@ const placeBid = async (request, response) => {
         'read': false
       }).returning('id')
       const noticeData = await getNotificationById(noticeId[0])
-      request.io.emit('notification', noticeData);
-
+      for (var key of keys) {
+        socket = request.io.sockets.sockets.get(key);
+        if(socket.handshake.query.userId == parseInt(highestBid[0]['user_id']))
+            socket.emit('notification', noticeData);
+      }
     }
     try{
       
@@ -281,7 +286,11 @@ const placeBid = async (request, response) => {
           'read': false
         }).returning('id')
         const noticeData = await getNotificationById(noticeId[0])
-        request.io.emit('notification', noticeData);
+        for (var key of keys) {
+          socket = request.io.sockets.sockets.get(key);
+          if(socket.handshake.query.userId == userId)
+            socket.emit('notification', noticeData);
+        }
         return response.status(HttpStatusCodes.CREATED).send(`Item successfully sold`);
       }
 
@@ -310,9 +319,11 @@ const placeBid = async (request, response) => {
         'read': false
       }).returning('id')
       const noticeData = await getNotificationById(noticeId[0])
-      request.io.emit('notification', noticeData);
-      
-
+      for (var key of keys) {
+        socket = request.io.sockets.sockets.get(key);
+        if(socket.handshake.query.userId == parseInt(seller[0]['owner']))
+          socket.emit('notification', noticeData);
+      }
       response.status(HttpStatusCodes.CREATED).send(`Bid Placed Successfuly, id: ${id}`);
     }
     catch(err) {
@@ -322,7 +333,7 @@ const placeBid = async (request, response) => {
 }
 
 const makeOffer = async (request, response) => {
-  
+  const keys = request.io.sockets.sockets.keys();
   const { orderId, itemId , userId , bidAmount } = request.body;
   if (!orderId || !itemId || !userId  || !bidAmount) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
@@ -373,7 +384,11 @@ const makeOffer = async (request, response) => {
       'read': false
     }).returning('id')
     const noticeData = await getNotificationById(noticeId[0])
-    request.io.emit('notification', noticeData);
+    for (var key of keys) {
+      socket = request.io.sockets.sockets.get(key);
+      if(socket.handshake.query.userId == parseInt(seller[0]['owner']))
+        socket.emit('notification', noticeData);
+    }
 
     response.status(HttpStatusCodes.CREATED).send(`Bid offered Successfuly, id: ${id}`);
   }
@@ -460,7 +475,7 @@ const withdrawOffer = async (request, response) => {
 }
 
 const acceptBid = async (request, response) => {
-  
+  const keys = request.io.sockets.sockets.keys();
   const { id, sellerId, txHash } = request.body
   if (!id) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
@@ -506,7 +521,11 @@ const acceptBid = async (request, response) => {
       'read': false
     }).returning('id')
     const noticeData = await getNotificationById(noticeId[0])
-    request.io.emit('notification', noticeData);
+    for (var key of keys) {
+      socket = request.io.sockets.sockets.get(key);
+      if(socket.handshake.query.userId == parseInt(buyer[0]['user_id']))
+        socket.emit('notification', noticeData);
+    }
 
     return response.status(HttpStatusCodes.CREATED).send(`accept bid successfuly`);
   }
@@ -516,7 +535,7 @@ const acceptBid = async (request, response) => {
 }
 
 const acceptOffer = async (request, response) => {
-  
+  const keys = request.io.sockets.sockets.keys();
   const { id, sellerId, txHash } = request.body
   if (!id) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
@@ -562,7 +581,11 @@ const acceptOffer = async (request, response) => {
       'read': false
     }).returning('id')
     const noticeData = await getNotificationById(noticeId[0])
-    request.io.emit('notification', noticeData);
+    for (var key of keys) {
+      socket = request.io.sockets.sockets.get(key);
+      if(socket.handshake.query.userId == parseInt(buyer[0]['user_id']))
+        socket.emit('notification', noticeData);
+    }
 
     return response.status(HttpStatusCodes.CREATED).send(`accept bid successfuly`);
   }
@@ -597,7 +620,7 @@ const claimNFT = async (request, response) => {
 }
 
 const buyNow = async (request, response) => {
-  
+  const keys = request.io.sockets.sockets.keys();
   const { orderId, itemId , userId , sellerId,  marketId, bidAmount, txHash } = request.body;
   if (!orderId || !itemId || !userId  || !marketId || !bidAmount) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
@@ -665,7 +688,11 @@ const buyNow = async (request, response) => {
         'read': false
       }).returning('id')
       const noticeData = await getNotificationById(noticeId[0])
-      request.io.emit('notification', noticeData);
+      for (var key of keys) {
+        socket = request.io.sockets.sockets.get(key);
+        if(socket.handshake.query.userId == parseInt(sellerId))
+          socket.emit('notification', noticeData);
+      }
 
       response.status(HttpStatusCodes.CREATED).send(`Item successfully sold`);
     }
