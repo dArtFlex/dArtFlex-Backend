@@ -252,7 +252,9 @@ const placeBid = async (request, response) => {
         await knex('marketplace').where('id', marketId).update({"sold": true, "current_price": bidAmount});
         const seller = await knex('item').where('id', itemId).returning('*');
         await knex('item').where('id', itemId).update({'owner' : userId, 'lazymint': false, 'lock' : true});
-        
+
+        await knex('promotion').where('item_id', itemId).del();
+
         await knex('activity').insert({
           'from': seller[0]['owner'],
           'to': userId,
@@ -487,7 +489,8 @@ const acceptBid = async (request, response) => {
     const buyer = await knex('bid').where('id', id).select("*");
     // const sellerId = await knex('item').where('id', parseInt(buyer[0]['item_id'])).returning('*');
     await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id'], 'lazymint': false});
-    
+    await knex('promotion').where('item_id', buyer[0]['item_id']).del();
+
     await knex('activity').insert({
       'from': sellerId,
       'to': buyer[0]['user_id'],
@@ -547,7 +550,8 @@ const acceptOffer = async (request, response) => {
 
     // const sellerId = await knex('item').where('id', parseInt(buyer[0]['item_id'])).returning('*');
     await knex('item').where('id', buyer[0]['item_id']).update({'owner' : buyer[0]['user_id'], 'lazymint': false});
-    
+    await knex('promotion').where('item_id', buyer[0]['item_id']).del();
+
     await knex('activity').insert({
       'from': sellerId,
       'to': buyer[0]['user_id'],
@@ -654,7 +658,8 @@ const buyNow = async (request, response) => {
       // const seller = await knex('item').where('id', parseInt(itemId)).returning('*');
       await knex('marketplace').where('id', parseInt(marketId)).update({"sold": true, "current_price": bidAmount})
       await knex('item').where('id', itemId).update({'owner' : userId, 'lazymint': false});
-
+      await knex('promotion').where('item_id', itemId).del();
+      
       await knex('activity').insert({
         'from': sellerId,
         'to': userId,
