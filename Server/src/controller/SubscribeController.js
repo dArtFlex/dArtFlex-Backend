@@ -23,7 +23,7 @@ async function updateDB(_from, _to, tokenId) {
 	const from = await knex('users').where('wallet', _from.toLowerCase()).select('*');
 	const to = await knex('users').where('wallet', _to.toLowerCase()).select('*');
 	let id;
-	if(to.length == 0) {
+	if(!to.length) {
 		const user = [{
 			'fullname': "Anonymous",
 			'userid' :  _to.toLowerCase(),
@@ -43,7 +43,7 @@ async function updateDB(_from, _to, tokenId) {
 		id = to[0].id;
 	}
 	const item = await knex('item').where('token_id', tokenId).select('*');
-	if(item.length > 0) {
+	if(item.length) {
 		await knex('item').where('token_id', tokenId).update({'owner' : id, 'lazymint': false});
 	}
 }

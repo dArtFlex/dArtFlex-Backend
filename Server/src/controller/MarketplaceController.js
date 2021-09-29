@@ -44,12 +44,12 @@ const getAll = async (request, response) => {
 
 const checkMarket = async (request, response) => {
   try{
-    const result = await knex('marketplace').select("*")
+    const result = await knex('marketplace').whereNotNull('end_time').select("*")
     result.map(async(market) => {
         const currentTime = getCurrentTime();
-        if(currentTime >= market['end_time']) {
+        if(currentTime >= Number(market['end_time'])) {
           const higgestBid = await knex('bid').where('market_id', market.id).andWhere('status','pending').select('*');
-          if( higgestBid.length == 0 ){
+          if( !higgestBid.length ){
             const creatorData = await knex('bid').where('market_id', market.id).andWhere('status','listed').select('*');
             await knex('bid').where('market_id', market.id).andWhere('status','listed').del();
             await knex('marketplace').where('id', market.id).del();
@@ -62,7 +62,7 @@ const checkMarket = async (request, response) => {
               'bid_amount': creatorData[0]['bid_amount'],
               'bid_id': 0,
               'sales_token_contract': '0x',
-              'status': 'unlisted'  
+              'status': 'unlisted'
             }).returning('id');
           }
         }
@@ -75,15 +75,16 @@ const checkMarket = async (request, response) => {
 }
 
 const create = async (request, response) => {
-  const { type, itemId, startPrice ,endPrice , startTime, endTime, salesTokenContract, platfromFee} = request.body
+  const { type, itemId, startPrice, endPrice, startTime, endTime: reqEndTime, salesTokenContract, platfromFee } = request.body
+  const endTime = type === "instant_buy" ? null : reqEndTime
   const currentMarket = await knex('marketplace').where('item_id', parseInt(itemId)).andWhere('sold', false).select("*");
   if (currentMarket.length > 0) 
     return response.status(HttpStatusCodes.BAD_REQUEST).send(`Item is already in marketplace`);
     
-  if(!(type == "auction" || type == "instant_buy")){
+  if(!["auction", "instant_buy"].includes(type)){
     return response.status(HttpStatusCodes.BAD_REQUEST).send(`invalid sales type`);
   }
-  if(type == "auction")
+  if(type === "auction")
   {
     if(endTime <= startTime){
       return response.status(HttpStatusCodes.BAD_REQUEST).send(`expiratoin time is invalid`);

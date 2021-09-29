@@ -189,7 +189,7 @@ router.get('/get_all', async(request, response) => {
  *                              description: the platform fee
  *                      example:
  *                          itemId: 1
- *                          type: Auction
+ *                          type: auction
  *                          startPrice: harry@ideasoft.com
  *                          endPrice: "0x3D0b45BCEd34dE6402cE7b9e7e37bDd0Be9424F3"
  *                          startTime: 1626403759
