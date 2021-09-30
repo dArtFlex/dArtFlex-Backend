@@ -6,7 +6,14 @@ const cron = require('node-cron');
 const port = 8888
 const app = express()
 const server = require('http').createServer(app);
-const io = require('socket.io')(server);
+const io = require('socket.io')(server, {
+    cors: {
+        origin : "*",
+        // methods: ["GET", "POST"],
+        // credentials: true
+    }
+
+});
 
 const swaggerUI = require('swagger-ui-express');
 const swaggerJsDoc = require('swagger-jsdoc');
@@ -82,7 +89,7 @@ app.use(function(request, response, next){
 });
 
 app.use(express.static('public'));
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
 app.use(bodyParser.json({limit: '500mb'}));
 app.use(bodyParser.urlencoded({limit: '500mb', extended: true}));
 app.use(cors());
