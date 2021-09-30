@@ -53,6 +53,7 @@ const checkMarket = async (request, response) => {
             const creatorData = await knex('bid').where('market_id', market.id).andWhere('status','listed').select('*');
             await knex('bid').where('market_id', market.id).andWhere('status','listed').del();
             await knex('marketplace').where('id', market.id).del();
+            await knex('promotion').where('item_id', market.item_id).del();
             await knex('activity').insert({
               'from': creatorData[0]['user_id'],
               'to': 0,
