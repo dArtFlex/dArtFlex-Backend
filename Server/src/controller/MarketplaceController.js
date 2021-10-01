@@ -77,7 +77,7 @@ const checkMarket = async (request, response) => {
           }
 
           if( marketBids.length ){
-            await knex('bid').where('id', marketBids[0].id).update({"status": "accepted"});
+            await knex('bid').where('id', marketBids[0].id).update({"status": "claiming"});
             await knex('marketplace').where('id', market.id).update({"sold": true, "current_price": marketBids[0].bid_amount});
             await knex('item').where('id', market.item_id).update({'owner' : marketBids[0].user_id, 'lazymint': false, 'lock' : true});
 
@@ -92,7 +92,7 @@ const checkMarket = async (request, response) => {
               'bid_amount': marketBids[0].bid_amount,
               'sales_token_contract': '0x',
               'tx_hash': '0x',
-              'status': 'pending'
+              'status': 'claiming'
             }).returning('id');
 
             await knex('activity').insert({
@@ -105,7 +105,7 @@ const checkMarket = async (request, response) => {
               'bid_amount': marketBids[0].bid_amount,
               'sales_token_contract': '0x',
               'tx_hash': '0x',
-              'status': 'pending'
+              'status': 'claiming'
             }).returning('id');
           }
         }
