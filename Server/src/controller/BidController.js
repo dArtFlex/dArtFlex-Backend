@@ -156,20 +156,24 @@ const changePrice = async (request, response) => {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
   }
 
-  const result = await knex('marketplace').where("id", id).select("*");
+  const result = await knex('marketplace')
+    .where("item_id", id)
+    .orderBy('created_at', 'DESC')
+    .limit(1)
+    .select("*");
   if(result.length == 0) 
     return response.status(HttpStatusCodes.BAD_REQUEST).send("item did not listed");
   else{
     try{
-      const creatorData = await knex('bid').where('market_id', id).andWhere('status', 'listed').select('*');
-      await knex('bid').where('market_id', id).andWhereNot('status', 'listed').del();
-      await knex('marketplace').update('start_price', newPrice).where("id", id);
-      await knex('bid').where('market_id', id).andWhere('status', 'listed').update('bid_amount', newPrice);
+      const creatorData = await knex('bid').where('item_id', id).andWhere('status', 'listed').select('*');
+      await knex('bid').where('item_id', id).andWhereNot('status', 'listed').del();
+      await knex('marketplace').update('start_price', newPrice).where("id", result[0].id);
+      await knex('bid').where('market_id', result[0].id).andWhere('status', 'listed').update('bid_amount', newPrice);
       const activityId = await knex('activity').insert({
         'from': creatorData[0]['user_id'],
         'to': 0,
         'item_id': creatorData[0]['item_id'],
-        'market_id': id,
+        'market_id': result[0].id,
         'order_id': creatorData[0]['order_id'],
         'bid_amount': newPrice,
         'bid_id': 0,
@@ -177,7 +181,7 @@ const changePrice = async (request, response) => {
         'status': 'price changed'  
       }).returning('id');
 
-      response.status(HttpStatusCodes.CREATED).send(`item price chagned Successfuly, id: ${id}`);
+      response.status(HttpStatusCodes.CREATED).send(`item price chagned Successfuly, item_id: ${id}`);
     }
     catch(err) {
       return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error unList Item, ${err}`);
