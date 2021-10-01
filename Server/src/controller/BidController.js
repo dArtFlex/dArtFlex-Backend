@@ -599,22 +599,52 @@ const acceptOffer = async (request, response) => {
 }
 
 const claimNFT = async (request, response) => {
-  
   const { itemId, buyerId, sellerId, txHash } = request.body
 
   try{
-    
-    await knex('item').where('id', itemId).update({'lock' : false});
-    
-    await knex('activity').where({'from':sellerId , 'to' : buyerId, 'status' : 'pending '}).update({
+    const market = await knex('marketplace')
+      .where('item_id', itemId)
+      .andWhere('sold', false)
+      .update({"sold": true})
+      .returning('*');
+    const highestBid = await knex('bid')
+      .where("item_id", itemId)
+      .andWhere('status', 'pending')
+      .select('*')
+      .orderBy('created_at', 'DESC')
+      .limit(1);
+    await knex('bid').where('id', highestBid[0].id).update({"status": "accepted"});
+    await knex('item').where('id', itemId).update({'owner' : buyerId, 'lazymint': false, 'lock' : false});
+
+    await knex('promotion').where('item_id', itemId).del();
+
+    await knex('activity').insert({
+      'from': sellerId,
+      'to': buyerId,
+      'item_id': itemId,
+      'market_id': market.id,
+      'order_id': market.order_id,
+      'bid_id': highestBid[0].id,
+      'bid_amount': highestBid[0].bid_amount,
+      'sales_token_contract': '0x',
       'tx_hash': txHash,
       'status': 'sold'
     }).returning('id');
 
-    await knex('activity').where({'from':sellerId , 'to' : buyerId, 'status' : 'pending '}).update({
+    await knex('activity').insert({
+      'from': buyerId,
+      'to': sellerId,
+      'item_id': itemId,
+      'market_id': market.id,
+      'order_id': market.order_id,
+      'bid_id': highestBid[0].id,
+      'bid_amount': highestBid[0].bid_amount,
+      'sales_token_contract': '0x',
       'tx_hash': txHash,
       'status': 'purchased'
     }).returning('id');
+    
+    await knex('item').where('id', itemId).update({'lock' : false});
 
     return response.status(HttpStatusCodes.CREATED).send(`Claim NFT successfuly`);
   }

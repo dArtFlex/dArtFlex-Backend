@@ -2,6 +2,7 @@ const { BN } = require('bn.js');
 var express = require('express');
 var HttpStatusCodes = require('http-status-codes');
 const secrets= require('../../secrets.js')
+const {getNotificationById} = require("./NotificationController");
 const knex = require('knex')(secrets.database)
 
 function getCurrentTime() {
@@ -44,16 +45,24 @@ const getAll = async (request, response) => {
 
 const checkMarket = async (request, response) => {
   try{
-    const result = await knex('marketplace').whereNotNull('end_time').select("*")
-    result.map(async(market) => {
+    const result = await knex('marketplace')
+      .whereNotNull('end_time')
+      .andWhere('sold', false)
+      .select("*")
+    for await (let market of result) {
         const currentTime = getCurrentTime();
         if(currentTime >= Number(market['end_time'])) {
-          const higgestBid = await knex('bid').where('market_id', market.id).andWhere('status','pending').select('*');
-          if( !higgestBid.length ){
+          const marketBids = await knex('bid')
+            .where('market_id', market.id)
+            .andWhere('status','pending')
+            .orderBy('created_at', 'DESC')
+            .select('*');
+          await knex('promotion').where('item_id', market.item_id).del();
+
+          if( !marketBids.length ){
             const creatorData = await knex('bid').where('market_id', market.id).andWhere('status','listed').select('*');
             await knex('bid').where('market_id', market.id).andWhere('status','listed').del();
             await knex('marketplace').where('id', market.id).del();
-            await knex('promotion').where('item_id', market.item_id).del();
             await knex('activity').insert({
               'from': creatorData[0]['user_id'],
               'to': 0,
@@ -66,8 +75,41 @@ const checkMarket = async (request, response) => {
               'status': 'unlisted'
             }).returning('id');
           }
+
+          if( marketBids.length ){
+            await knex('bid').where('id', marketBids[0].id).update({"status": "accepted"});
+            await knex('marketplace').where('id', market.id).update({"sold": true, "current_price": marketBids[0].bid_amount});
+            await knex('item').where('id', market.item_id).update({'owner' : marketBids[0].user_id, 'lazymint': false, 'lock' : true});
+
+            const seller = await knex('item').where('id', market.item_id).returning('*');
+            await knex('activity').insert({
+              'from': seller[0].owner,
+              'to': marketBids[0].user_id,
+              'item_id': seller[0].id,
+              'market_id': market.id,
+              'order_id': marketBids[0].order_id,
+              'bid_id': marketBids[0].id,
+              'bid_amount': marketBids[0].bid_amount,
+              'sales_token_contract': '0x',
+              'tx_hash': '0x',
+              'status': 'pending'
+            }).returning('id');
+
+            await knex('activity').insert({
+              'from': marketBids[0].user_id,
+              'to': seller[0].owner,
+              'item_id': seller[0].id,
+              'market_id': market.id,
+              'order_id': marketBids[0].order_id,
+              'bid_id': marketBids[0].id,
+              'bid_amount': marketBids[0].bid_amount,
+              'sales_token_contract': '0x',
+              'tx_hash': '0x',
+              'status': 'pending'
+            }).returning('id');
+          }
         }
-    })
+    }
     return true;
   }
   catch(err) {
