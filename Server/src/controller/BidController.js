@@ -25,7 +25,7 @@ const getById = async (request, response) => {
 const getByMarketId = async (request, response) => {
   const id = parseInt(request.params.id)
   try{
-    const items = await knex('bid').where("market_id", id).select("*");
+    const items = await knex('bid').where("market_id", id).orderBy('created_at', 'DESC').select("*");
     response.status(HttpStatusCodes.ACCEPTED).send(items);
   }
   catch(err) {
@@ -161,7 +161,6 @@ const changePrice = async (request, response) => {
     return response.status(HttpStatusCodes.BAD_REQUEST).send("item did not listed");
   else{
     try{
-
       const creatorData = await knex('bid').where('market_id', id).andWhere('status', 'listed').select('*');
       await knex('bid').where('market_id', id).andWhereNot('status', 'listed').del();
       await knex('marketplace').update('start_price', newPrice).where("id", id);
