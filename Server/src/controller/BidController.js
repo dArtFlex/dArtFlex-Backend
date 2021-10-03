@@ -259,19 +259,6 @@ const placeBid = async (request, response) => {
         await knex('promotion').where('item_id', itemId).del();
 
         await knex('activity').insert({
-          'from': seller[0]['owner'],
-          'to': userId,
-          'item_id': itemId,
-          'market_id': marketId,
-          'order_id': orderId,
-          'bid_id': id,
-          'bid_amount': bidAmount,
-          'sales_token_contract': '0x',
-          'tx_hash': '0x',
-          'status': 'claiming'
-        }).returning('id');
-
-        await knex('activity').insert({
           'from': userId,
           'to': seller[0]['owner'],
           'item_id': itemId,
