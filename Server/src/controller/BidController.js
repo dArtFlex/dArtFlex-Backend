@@ -252,9 +252,8 @@ const placeBid = async (request, response) => {
       if(_bidAmount.gte(endPrice)) {
         data.status = "claiming"
         const id = await knex('bid').insert(data).returning('id');
-        await knex('marketplace').where('id', marketId).update({"sold": true, "current_price": bidAmount});
+        await knex('marketplace').where('id', marketId).update({ "current_price": bidAmount});
         const seller = await knex('item').where('id', itemId).returning('*');
-        await knex('item').where('id', itemId).update({'owner' : userId, 'lazymint': false, 'lock' : true});
 
         await knex('promotion').where('item_id', itemId).del();
 
@@ -605,6 +604,8 @@ const claimNFT = async (request, response) => {
       .orderBy('created_at', 'DESC')
       .limit(1);
     await knex('bid').where('id', highestBid[0].id).update({"status": "accepted"});
+    await knex('marketplace').where('id', market.id).update({"sold": true});
+
     await knex('item').where('id', itemId).update({'owner' : buyerId, 'lazymint': false, 'lock' : false});
 
     await knex('activity').insert({

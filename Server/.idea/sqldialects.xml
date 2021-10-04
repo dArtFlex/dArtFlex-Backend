@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/../../2/postgres_public_activity.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/../../2/postgres_public_album.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/../../2/postgres_public_bid.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/../../2/postgres_public_hashtag.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/../../2/postgres_public_hashtag_item.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/../../2/postgres_public_item.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/../../2/postgres_public_knex_migrations.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/../../2/postgres_public_knex_migrations_lock.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/../../2/postgres_public_lazymint.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/../../2/postgres_public_marketplace.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/../../2/postgres_public_metadata.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/../../2/postgres_public_notification.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/../../2/postgres_public_order.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/../../2/postgres_public_promotion.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/../../2/postgres_public_token_price.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/../../2/postgres_public_users.sql" dialect="PostgreSQL" />
+    <file url="file://$USER_HOME$/postgres_public_activity.sql" dialect="PostgreSQL" />
+    <file url="file://$USER_HOME$/postgres_public_album.sql" dialect="PostgreSQL" />
+    <file url="file://$USER_HOME$/postgres_public_bid.sql" dialect="PostgreSQL" />
+    <file url="file://$USER_HOME$/postgres_public_hashtag.sql" dialect="PostgreSQL" />
+    <file url="file://$USER_HOME$/postgres_public_hashtag_item.sql" dialect="PostgreSQL" />
+    <file url="file://$USER_HOME$/postgres_public_item.sql" dialect="PostgreSQL" />
+    <file url="file://$USER_HOME$/postgres_public_knex_migrations.sql" dialect="PostgreSQL" />
+    <file url="file://$USER_HOME$/postgres_public_knex_migrations_lock.sql" dialect="PostgreSQL" />
+    <file url="file://$USER_HOME$/postgres_public_lazymint.sql" dialect="PostgreSQL" />
+    <file url="file://$USER_HOME$/postgres_public_marketplace.sql" dialect="PostgreSQL" />
+    <file url="file://$USER_HOME$/postgres_public_metadata.sql" dialect="PostgreSQL" />
+    <file url="file://$USER_HOME$/postgres_public_notification.sql" dialect="PostgreSQL" />
+    <file url="file://$USER_HOME$/postgres_public_order.sql" dialect="PostgreSQL" />
+    <file url="file://$USER_HOME$/postgres_public_promotion.sql" dialect="PostgreSQL" />
+    <file url="file://$USER_HOME$/postgres_public_token_price.sql" dialect="PostgreSQL" />
+    <file url="file://$USER_HOME$/postgres_public_users.sql" dialect="PostgreSQL" />
+  </component>
+</project>

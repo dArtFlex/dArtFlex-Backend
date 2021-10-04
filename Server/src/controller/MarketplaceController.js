@@ -78,9 +78,8 @@ const checkMarket = async (request, response) => {
 
           if( marketBids.length ){
             await knex('bid').where('id', marketBids[0].id).update({"status": "claiming"});
-            await knex('marketplace').where('id', market.id).update({"sold": true, "current_price": marketBids[0].bid_amount});
+            await knex('marketplace').where('id', market.id).update({"current_price": marketBids[0].bid_amount});
             const seller = await knex('item').where('id', market.item_id).returning('*');
-            await knex('item').where('id', market.item_id).update({'owner' : marketBids[0].user_id, 'lazymint': false, 'lock' : true});
 
             await knex('activity').insert({
               'from': marketBids[0].user_id,
