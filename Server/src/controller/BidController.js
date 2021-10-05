@@ -593,7 +593,7 @@ const claimNFT = async (request, response) => {
   try{
     const market = await knex('marketplace')
       .where('item_id', itemId)
-      .andWhere('sold', true)
+      //.andWhere('sold', true)
       .orderBy('created_at', 'DESC')
       .limit(1)
       .select('*');
@@ -604,7 +604,7 @@ const claimNFT = async (request, response) => {
       .orderBy('created_at', 'DESC')
       .limit(1);
     await knex('bid').where('id', highestBid[0].id).update({"status": "accepted"});
-    await knex('marketplace').where('id', market.id).update({"sold": true});
+    await knex('marketplace').where('id', market[0].id).update({"sold": true});
 
     await knex('item').where('id', itemId).update({'owner' : buyerId, 'lazymint': false, 'lock' : false});
 
@@ -613,7 +613,7 @@ const claimNFT = async (request, response) => {
       'to': buyerId,
       'item_id': itemId,
       'market_id': market[0].id,
-      'order_id': market[0].order_id,
+      'order_id': highestBid[0].order_id,
       'bid_id': highestBid[0].id,
       'bid_amount': highestBid[0].bid_amount,
       'sales_token_contract': '0x',
@@ -626,7 +626,7 @@ const claimNFT = async (request, response) => {
       'to': sellerId,
       'item_id': itemId,
       'market_id': market[0].id,
-      'order_id': market[0].order_id,
+      'order_id': highestBid[0].order_id,
       'bid_id': highestBid[0].id,
       'bid_amount': highestBid[0].bid_amount,
       'sales_token_contract': '0x',
