@@ -60,6 +60,12 @@ const checkMarket = async (request, response) => {
           await knex('promotion').where('item_id', market.item_id).del();
 
           if( !marketBids.length ){
+            const marketBidsClaiming = await knex('bid')
+              .where('market_id', market.id)
+              .andWhere('status','claiming')
+              .orderBy('created_at', 'DESC')
+              .select('*');
+            if(marketBidsClaiming.length) return
             const creatorData = await knex('bid').where('market_id', market.id).andWhere('status','listed').select('*');
             await knex('bid').where('market_id', market.id).andWhere('status','listed').del();
             await knex('marketplace').where('id', market.id).del();
