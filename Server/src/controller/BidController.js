@@ -515,8 +515,9 @@ const acceptBid = async (request, response) => {
     const noticeData = await getNotificationById(noticeId[0])
     for (var key of keys) {
       socket = request.io.sockets.sockets.get(key);
-      if(socket.handshake.query.userId == parseInt(buyer[0]['user_id']))
+      if(socket.handshake.query.userId === buyer[0]['user_id']) {
         socket.emit('notification', noticeData);
+      }
     }
 
     return response.status(HttpStatusCodes.CREATED).send(`accept bid successfuly`);
