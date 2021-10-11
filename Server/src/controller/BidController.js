@@ -592,31 +592,31 @@ const claimNFT = async (request, response) => {
   const { itemId, buyerId, sellerId, txHash } = request.body
 
   try{
-    const market = await knex('marketplace')
-      .where('item_id', itemId)
-      //.andWhere('sold', true)
-      .orderBy('created_at', 'DESC')
-      .limit(1)
-      .select('*');
     const highestBid = await knex('bid')
       .where("item_id", itemId)
       .andWhere('status', 'claiming')
       .select('*')
       .orderBy('created_at', 'DESC')
       .limit(1);
+
+    if (!highestBid[0]) {
+      return response.status(HttpStatusCodes.NOT_FOUND).send("Bid not found");
+    }
     await knex('bid').where('id', highestBid[0].id).update({"status": "accepted"});
-    await knex('marketplace').where('id', market[0].id).update({"sold": true});
+    await knex('marketplace')
+      .where('id', parseInt(highestBid[0]['market_id']))
+      .update({"sold": true});
 
     await knex('item').where('id', itemId).update({'owner' : buyerId, 'lazymint': false, 'lock' : false});
 
     await knex('activity').insert({
       'from': sellerId,
       'to': buyerId,
-      'item_id': itemId,
-      'market_id': market[0].id,
-      'order_id': highestBid[0].order_id,
+      'item_id': highestBid[0]['item_id'],
+      'market_id': highestBid[0]['market_id'],
+      'order_id': highestBid[0]['order_id'],
       'bid_id': highestBid[0].id,
-      'bid_amount': highestBid[0].bid_amount,
+      'bid_amount': highestBid[0]['bid_amount'],
       'sales_token_contract': '0x',
       'tx_hash': txHash,
       'status': 'sold'
@@ -625,11 +625,11 @@ const claimNFT = async (request, response) => {
     await knex('activity').insert({
       'from': buyerId,
       'to': sellerId,
-      'item_id': itemId,
-      'market_id': market[0].id,
-      'order_id': highestBid[0].order_id,
+      'item_id': highestBid[0]['item_id'],
+      'market_id': highestBid[0]['market_id'],
+      'order_id': highestBid[0]['order_id'],
       'bid_id': highestBid[0].id,
-      'bid_amount': highestBid[0].bid_amount,
+      'bid_amount': highestBid[0]['bid_amount'],
       'sales_token_contract': '0x',
       'tx_hash': txHash,
       'status': 'purchased'
