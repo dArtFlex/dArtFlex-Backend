@@ -121,7 +121,7 @@ app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
 
 watchEtherTransfers();
 
-cron.schedule('*/1 * * * *', function () {
+cron.schedule('* * * * *', function () {
 	checkMarket();
     updateTokenPrice();
 })

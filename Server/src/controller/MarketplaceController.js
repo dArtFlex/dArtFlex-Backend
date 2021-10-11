@@ -49,7 +49,7 @@ const checkMarket = async (request, response) => {
       .whereNotNull('end_time')
       .andWhere('sold', false)
       .select("*")
-    for await (let market of result) {
+    result.map(async(market) => {
         const currentTime = getCurrentTime();
         if(currentTime >= Number(market['end_time'])) {
           const marketBids = await knex('bid')
@@ -101,7 +101,7 @@ const checkMarket = async (request, response) => {
             }).returning('id');
           }
         }
-    }
+    })
     return true;
   }
   catch(err) {
