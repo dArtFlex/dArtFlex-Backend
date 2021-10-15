@@ -19,15 +19,20 @@ const get = async (request, response) => {
 
 const updateTokenPrice = async () => {
   const tokenName = 'ETH';
+  const tokenName1 = 'BNB'; 
   try {
     const response = await axios.get(`https://min-api.cryptocompare.com/data/price?fsym=${tokenName}&tsyms=usd`);
+    const response1 = await axios.get(`https://min-api.cryptocompare.com/data/price?fsym=${tokenName}&tsyms=usd`);
     const usdPrice = response.data['USD'];
-    console.log(usdPrice);
+    const bnbPrice = response.data['BNB'];
     const data = await knex('token_price').where('token_name', tokenName).select('*');
+    const data1 = await knex('token_price').where('token_name_bnb', tokenName1).select('*');
     if(data.length == 0) {
       await knex('token_price').insert({
         'token_name': tokenName,
-        'usd_price' : usdPrice
+        'usd_price' : usdPrice,
+        'token_name_bnb': tokenName1,
+        'usd_price_bnb': bnbPrice
       });
     } else {
       await knex('token_price').where('token_name', tokenName).update({'usd_price' : usdPrice});

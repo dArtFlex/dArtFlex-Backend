@@ -2,7 +2,7 @@ const Web3 = require("web3");
 const secrets= require('../../secrets.js')
 const knex = require('knex')(secrets.database)
 
-const web3 = new Web3(new Web3.providers.WebsocketProvider('wss://mainnet.infura.io/ws/v3/2de4d25aeea745b181468b898cf4e899'));
+const web3 = new Web3(new Web3.providers.WebsocketProvider('https://data-seed-prebsc-1-s1.binance.org:8545/'));
 
 async function watchEtherTransfers() {
 	const topic = web3.utils.keccak256('Transfer(address,address,uint256)');
