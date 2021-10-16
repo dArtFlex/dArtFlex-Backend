@@ -2,12 +2,17 @@ var express = require('express');
 var router = express.Router();
 
 const {
-    get
+    getETH,
+    getBNB
 } = require('../controller/TokenPriceController.js')
 
 
-router.get('/get/ETH', async(request, response) => {
-    get(request, response);
+router.getETH('/get/ETH', async(request, response) => {
+    getETH(request, response);
+});
+
+router.getBNB('/get/BNB', async(request, response) => {
+    getBNB(request, response);
 });
 
 module.exports = router;
