@@ -5,7 +5,7 @@ const knex = require('knex')(secrets.database)
 const axios = require('axios');
 
 
-const get = async (request, response) => {
+const getETH = async (request, response) => {
   try{
     const data = await knex('token_price').where("token_name", 'ETH').select("*");
     if(data.length == 0)
@@ -17,25 +17,44 @@ const get = async (request, response) => {
   }
 }
 
+const getBNB = async (request, response) => {
+  try{
+    const data = await knex('token_price').where("token_name", 'BNB').select("*");
+    if(data.length == 0)
+      return response.status(HttpStatusCodes.ACCEPTED).send(0);
+    return response.status(HttpStatusCodes.ACCEPTED).send(data[0]['usd_price']);
+  }
+  catch(err) {
+    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get usd price`);
+  }
+}
+
 const updateTokenPrice = async () => {
-  const tokenName = 'ETH';
-  const tokenName1 = 'BNB'; 
+  const tokenNameETH = 'ETH';
+  const tokenNameBNB = 'BNB';
   try {
-    const response = await axios.get(`https://min-api.cryptocompare.com/data/price?fsym=${tokenName}&tsyms=usd`);
-    const response1 = await axios.get(`https://min-api.cryptocompare.com/data/price?fsym=${tokenName}&tsyms=usd`);
-    const usdPrice = response.data['USD'];
-    const bnbPrice = response.data['BNB'];
-    const data = await knex('token_price').where('token_name', tokenName).select('*');
-    const data1 = await knex('token_price').where('token_name_bnb', tokenName1).select('*');
-    if(data.length == 0) {
+    const responseETH = await axios.get(`https://min-api.cryptocompare.com/data/price?fsym=${tokenNameETH}&tsyms=usd`);
+    const usdPriceETH = responseETH.data['USD'];
+    const responseBNB = await axios.get(`https://min-api.cryptocompare.com/data/price?fsym=${tokenNameBNB}&tsyms=usd`);
+    const usdPriceBNB = responseBNB.data['USD'];
+    
+    const dataETH = await knex('token_price').where('token_name', tokenNameETH).select('*');
+    if(dataETH.length == 0) {
       await knex('token_price').insert({
-        'token_name': tokenName,
-        'usd_price' : usdPrice,
-        'token_name_bnb': tokenName1,
-        'usd_price_bnb': bnbPrice
+        'token_name': tokenNameETH,
+        'usd_price' : usdPriceETH
       });
     } else {
-      await knex('token_price').where('token_name', tokenName).update({'usd_price' : usdPrice});
+      await knex('token_price').where('token_name', tokenNameETH).update({'usd_price' : usdPriceETH});
+    }
+    const dataBNB = await knex('token_price').where('token_name', tokenNameBNB).select('*');
+    if(dataBNB.length == 0) {
+      await knex('token_price').insert({
+        'token_name': tokenNameBNB,
+        'usd_price' : usdPriceBNB
+      });
+    } else {
+      await knex('token_price').where('token_name', tokenNameBNB).update({'usd_price' : usdPriceBNB});
     }
     return ;
   }
@@ -47,6 +66,7 @@ const updateTokenPrice = async () => {
 
 
 module.exports = {
-  get,
+  getETH,
+  getBNB,
   updateTokenPrice
 }
