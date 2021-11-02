@@ -510,14 +510,15 @@ const getAll = async (request, response) => {
 
 const create = async (request, response) => {
   // console.log(request.io.sockets.sockets)
-  const { contract, tokenId , uri , creator, owner, royalty, royaltyFee, lazymint, signature, hashtagIdList } = request.body
-  if (!contract || !tokenId || !uri || !creator || !owner) {
+  const { contract, tokenId ,chainId , uri , creator, owner, royalty, royaltyFee, lazymint, signature, hashtagIdList } = request.body
+  if (!contract || !tokenId || !uri || !creator || !owner || !chainId) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
   }
 
   const data = {
     contract, 
     "token_id" : tokenId,
+    chain_id: chainId,
     uri,
     creator,
     owner,
@@ -559,7 +560,7 @@ const create = async (request, response) => {
 }
 
 const update = async (request, response) => {
-  const { id, contract, tokenId , uri , creator, owner, royalty, royaltyFee, lazymint, signature } = request.body
+  const { id, contract, tokenId , chainId, uri , creator, owner, royalty, royaltyFee, lazymint, signature } = request.body
   if (!id, !contract || !tokenId || !uri || !creator || !owner ) {
       return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
   }
@@ -567,6 +568,7 @@ const update = async (request, response) => {
   const data = {
     contract, 
     "token_id" : tokenId,
+    chain_id: chainId,
     uri,
     creator,
     owner,

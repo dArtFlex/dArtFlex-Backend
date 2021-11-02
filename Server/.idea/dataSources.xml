@@ -1,18 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="xxxx@localhost" uuid="1d2f9971-9a14-4c01-b75f-17bfdc994802">
+    <data-source source="LOCAL" name="postgres@localhost_dart" uuid="1d2f9971-9a14-4c01-b75f-17bfdc994802">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://localhost:5432/xxxx</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="@3.11.202.153" read-only="true" uuid="0ad2e59a-5d4a-4bb8-b81d-ad6b612787ad">
+    <data-source source="LOCAL" name="postgres@development_dart" uuid="0ad2e59a-5d4a-4bb8-b81d-ad6b612787ad">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://3.11.202.153:5432</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
+    <data-source source="LOCAL" name="postgres@production_dart" uuid="bb4bf6b1-c2e3-4f99-85ff-50636a880198">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://18.193.161.0:5432/postgres</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

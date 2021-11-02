@@ -5,6 +5,7 @@ exports.up = function(knex, Promise) {
         t.increments('id').primary().notNullable()
         t.string('contract').notNullable()
         t.string('token_id').notNullable().unique()
+        t.string('chain_id').notNullable()
         t.string('uri').notNullable()
         t.string('creator').notNullable()
         t.string('owner').notNullable()
