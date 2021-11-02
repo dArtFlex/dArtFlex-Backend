@@ -12,6 +12,7 @@ exports.up = function(knex, Promise) {
         t.string('royalty_fee')
         t.string('signature').notNullable()
         t.bool('ban').notNullable()
+        t.bool('lock').notNullable().defaultTo(false)
         t.bool('lazymint')
         t.timestamp('created_at').defaultTo(knex.fn.now())
         t.timestamp('updated_at').defaultTo(knex.fn.now())

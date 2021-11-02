@@ -15,7 +15,9 @@ const {
     withdrawOffer,
     acceptBid,
     acceptOffer,
-    buyNow
+    buyNow,
+    claimNFT,
+    changePrice
 } = require('../controller/BidController.js')
 
 /**
@@ -509,6 +511,50 @@ router.post('/accept_bid', async(request, response) => {
 
 /**
  * @swagger
+ * /api/bid/claim_nft:
+ *   post:
+ *      summary: Accept the highest bid
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      required:
+ *                          - id
+ *                          - txHash
+ *                      properties:
+ *                          id: 
+ *                              type: string
+ *                              description: The id of the bid
+ *                          txHash: 
+ *                              type: string
+ *                              description: The transaction hash
+ *                      example:
+ *                          id: 1
+ *                          txHash: "0x7a69606196659c8ffd047280106c8ad86588b28e9124cd29fcdcd3899343ab5e"
+ *      responses:
+ *           202:
+ *              description: accept bid successfuly
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: string
+ *                          example: "accept bid successfuly"
+ *           500:
+ *              description: Error accept bid.
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: string
+ *                          example: 'Error accept bid'
+ */
+ router.post('/claim_nft', async(request, response) => {
+    claimNFT(request, response);
+});
+
+/**
+ * @swagger
  * /api/bid/accept_offer:
  *   post:
  *      summary: Accept the highest offer
@@ -613,5 +659,51 @@ router.post('/accept_bid', async(request, response) => {
 
 router.post('/buy', async(request, response) => {
     buyNow(request, response);
+});
+
+
+
+/**
+ * @swagger
+ * /api/bid/change_price:
+ *   post:
+ *      summary: Change price of Auction
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      required:
+ *                          - id
+ *                          - newPrice
+ *                      properties:
+ *                          id: 
+ *                              type: string
+ *                              description: The id of the market
+ *                          newPrice: 
+ *                              type: string
+ *                              description: New Price
+ *                      example:
+ *                          id: 1
+ *                          newPrice: 10000000000000000
+ *      responses:
+ *           202:
+ *              description: Change price succeed
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: string
+ *                          example: "Change price succeed"
+ *           500:
+ *              description: Error Change Price.
+ *              content:
+ *                  application/json:
+ *                      schema:
+ *                          type: string
+ *                          example: 'Error Change Price'
+ */
+router.post('/change_price', async(request, response) => {
+    changePrice(request, response);
 });
 module.exports = router;

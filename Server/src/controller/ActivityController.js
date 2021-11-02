@@ -18,7 +18,23 @@ const getNftHistory = async (request, response) => {
 const getTradingHistory = async (request, response) => {
   const id = parseInt(request.params.id)
   try{
-    const result = await knex('activity').where("from", id).orWhere("to", id).select("*");
+    const result = await knex('activity').select('*')
+      .join(
+        knex('activity as activityData')
+          .select('id')
+          .where("from", id)
+          .orWhere("to", id)
+          .distinctOn("item_id")
+          .orderBy("item_id")
+          .orderBy("created_at", "desc")
+          .as("activityData"),
+        function () {
+          this.on('activityData.id', '=', 'activity.id')
+        }
+      )
+      .whereNotNull("activityData.id")
+      .orderBy("activity.created_at", "desc")
+      .select("*");
     response.status(HttpStatusCodes.ACCEPTED).send(result);
   }
   catch(err) {

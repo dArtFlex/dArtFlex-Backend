@@ -17,7 +17,6 @@ const getNotificationByUser = async (userId) => {
       }
       else {
         const metadataId = item[0]['uri'].split('get/').pop();
-        console.log(metadataId)
         const imageUrl = await knex('metadata').where('id', parseInt(metadataId)).select("*");
         notification['image_url'] = imageUrl[0]['image'];
         return notification;

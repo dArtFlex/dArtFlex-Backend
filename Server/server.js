@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const fileupload = require('express-fileupload');
+const cron = require('node-cron');
 const port = 8888
 const app = express()
 const server = require('http').createServer(app);
@@ -29,9 +30,12 @@ var RouterOrder = require('./src/router/Order');
 var RouterMarketplace = require('./src/router/Marketplace');
 var RouterBid = require('./src/router/Bid');
 var RouterActivity = require('./src/router/Activity');
+var RouterTokenPrice = require('./src/router/TokenPrice');
 var RouterSuperAdmin = require('./src/router/SuperAdmin');
 var {watchEtherTransfers} = require('./src/controller/SubscribeController');
 var {getNotificationByUser, updateNotificationStatus} = require('./src/controller/NotificationController');
+var {checkMarket} = require('./src/controller/MarketplaceController');
+var {updateTokenPrice} = require('./src/controller/TokenPriceController');
 const { request } = require('express');
 server.listen(port, () => console.log(`Listening on port ${port}...`));
 
@@ -66,10 +70,12 @@ const specs = swaggerJsDoc(options);
 io.on('connection',async function(socket){
     const userId =socket.handshake.query.userId;
     const data = await getNotificationByUser(parseInt(userId));
-    socket.emit('notification', data);
+    if (data.length > 0) {
+        if(socket.handshake.query.userId == data[0]['user_id'])
+            socket.emit('notification', data);
+    }
 
     socket.on('message', function(data){
-        console.log(data)
         updateNotificationStatus(data.id, data.read);
     });
 });
@@ -109,7 +115,14 @@ app.use('/api/order', RouterOrder);
 app.use('/api/marketplace', RouterMarketplace);
 app.use('/api/bid', RouterBid);
 app.use('/api/activity', RouterActivity);   
+app.use('/api/token_price', RouterTokenPrice);
 app.use('/api/super_admin', RouterSuperAdmin);
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(specs));
 
 watchEtherTransfers();
+
+cron.schedule('* * * * *', function () {
+	checkMarket();
+    updateTokenPrice();
+})
+// checkMarket();

@@ -6,9 +6,15 @@ const {
     getByTokenId,
     getByOwner,
     getByCreator,
+    getSalesDataByUser,
+    getBidAndOfferDataByUser,
     getAll,
+    getAuction,
+    getBuyNow,
+    getSold,
     create,
-    update
+    update,
+    getFeatured
 } = require('../controller/ItemController.js')
 
 /**
@@ -150,6 +156,15 @@ router.get('/get_by_owner/:id', async(request, response) => {
     getByOwner(request, response);
 });
 
+
+router.get('/get_salesdata_by_owner/:id', async(request, response) => {
+    getSalesDataByUser(request, response);
+});
+
+router.get('/get_buyandoffer_by_owner/:id', async(request, response) => {
+    getBidAndOfferDataByUser(request, response);
+});
+
 /**
  * @swagger
  * /api/item/get_by_creator/{wallet}:
@@ -195,6 +210,81 @@ router.get('/get_all', async(request, response) => {
     getAll(request, response);
 })
 
+/**
+ * @swagger
+ * /api/item/get_auction:
+ *   get:
+ *     summary: Returns all items
+ *     responses:
+ *       202:
+ *         description: The list of the item
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Item'
+ */
+ router.get('/get_auction', async(request, response) => {
+    getAuction(request, response);
+})
+
+
+/**
+ * @swagger
+ * /api/item/get_featured:
+ *   get:
+ *     summary: Returns all items
+ *     responses:
+ *       202:
+ *         description: The list of the item
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Item'
+ */
+ router.get('/get_featured', async(request, response) => {
+    getFeatured(request, response);
+})
+/**
+ * @swagger
+ * /api/item/get_buynow:
+ *   get:
+ *     summary: Returns all items
+ *     responses:
+ *       202:
+ *         description: The list of the item
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Item'
+ */
+ router.get('/get_buynow', async(request, response) => {
+    getBuyNow(request, response);
+})
+
+/**
+ * @swagger
+ * /api/item/get_sold:
+ *   get:
+ *     summary: Returns all items
+ *     responses:
+ *       202:
+ *         description: The list of the item
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Item'
+ */
+ router.get('/get_sold', async(request, response) => {
+    getSold(request, response);
+})
 
 /**
  * @swagger
