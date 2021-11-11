@@ -1,0 +1,22 @@
+version: '2.1'
+
+services:
+  postgres:
+    container_name: postgres
+    image: 'postgres:12.1-alpine'
+    environment:
+      - POSTGRES_USER=username
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=test
+    ports:
+      - '5434:5432'
+    volumes:
+      - dar-volume:/var/lib/postgresql/data/
+    networks:
+      - dar-network
+
+networks:
+  dar-network:
+
+volumes:
+  dar-volume:
