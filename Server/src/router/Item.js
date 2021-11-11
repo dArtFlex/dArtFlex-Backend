@@ -1,25 +1,26 @@
-var express = require('express');
+var express = require("express");
 var router = express.Router();
 
 const {
-    getById,
-    getByTokenId,
-    getByOwner,
-    getByCreator,
-    getSalesDataByUser,
-    getBidAndOfferDataByUser,
-    getAll,
-    getAuction,
-    getBuyNow,
-    getSold,
-    create,
-    update,
-    getFeatured
-} = require('../controller/ItemController.js')
+	getItem,
+	getById,
+	getByTokenId,
+	getByOwner,
+	getByCreator,
+	getSalesDataByUser,
+	getBidAndOfferDataByUser,
+	getAll,
+	getAuction,
+	getBuyNow,
+	getSold,
+	create,
+	update,
+	getFeatured,
+} = require("../controller/ItemController.js");
 
 /**
  * @swagger
- * components: 
+ * components:
  *  schemas:
  *      Item:
  *          type: object
@@ -35,7 +36,7 @@ const {
  *              - signature
  *              - lazymint
  *          properties:
- *              id: 
+ *              id:
  *                  type: integer
  *                  description: The id of the item
  *              contract:
@@ -78,6 +79,10 @@ const {
  *              signature: "0x3beb428e415be366cc06f6f65f59c9d209abdcec18d88acdec838f86d6d8088e418720f89568bbe0fffc134db19d137a216c86ae98e70c21b41eed7bb39084b81b"
  */
 
+router.get("/get", async (request, response) => {
+	getItem(request, response);
+});
+
 /**
  * @swagger
  * /api/item/get/{id}:
@@ -100,8 +105,8 @@ const {
  *               items:
  *                 $ref: '#/components/schemas/Item'
  */
-router.get('/get/:id', async(request, response) => {
-    getById(request, response);
+router.get("/get/:id", async (request, response) => {
+	getById(request, response);
 });
 
 /**
@@ -126,8 +131,8 @@ router.get('/get/:id', async(request, response) => {
  *               items:
  *                 $ref: '#/components/schemas/Item'
  */
-router.get('/get_by_token_id/:id', async(request, response) => {
-    getByTokenId(request, response);
+router.get("/get_by_token_id/:id", async (request, response) => {
+	getByTokenId(request, response);
 });
 
 /**
@@ -152,17 +157,16 @@ router.get('/get_by_token_id/:id', async(request, response) => {
  *               items:
  *                 $ref: '#/components/schemas/Item'
  */
-router.get('/get_by_owner/:id', async(request, response) => {
-    getByOwner(request, response);
+router.get("/get_by_owner/:id", async (request, response) => {
+	getByOwner(request, response);
 });
 
-
-router.get('/get_salesdata_by_owner/:id', async(request, response) => {
-    getSalesDataByUser(request, response);
+router.get("/get_salesdata_by_owner/:id", async (request, response) => {
+	getSalesDataByUser(request, response);
 });
 
-router.get('/get_buyandoffer_by_owner/:id', async(request, response) => {
-    getBidAndOfferDataByUser(request, response);
+router.get("/get_buyandoffer_by_owner/:id", async (request, response) => {
+	getBidAndOfferDataByUser(request, response);
 });
 
 /**
@@ -187,8 +191,8 @@ router.get('/get_buyandoffer_by_owner/:id', async(request, response) => {
  *               items:
  *                 $ref: '#/components/schemas/Item'
  */
-router.get('/get_by_creator/:id', async(request, response) => {
-    getByCreator(request, response);
+router.get("/get_by_creator/:id", async (request, response) => {
+	getByCreator(request, response);
 });
 
 /**
@@ -206,9 +210,9 @@ router.get('/get_by_creator/:id', async(request, response) => {
  *               items:
  *                 $ref: '#/components/schemas/Item'
  */
-router.get('/get_all', async(request, response) => {
-    getAll(request, response);
-})
+router.get("/get_all", async (request, response) => {
+	getAll(request, response);
+});
 
 /**
  * @swagger
@@ -225,10 +229,9 @@ router.get('/get_all', async(request, response) => {
  *               items:
  *                 $ref: '#/components/schemas/Item'
  */
- router.get('/get_auction', async(request, response) => {
-    getAuction(request, response);
-})
-
+router.get("/get_auction", async (request, response) => {
+	getAuction(request, response);
+});
 
 /**
  * @swagger
@@ -245,9 +248,9 @@ router.get('/get_all', async(request, response) => {
  *               items:
  *                 $ref: '#/components/schemas/Item'
  */
- router.get('/get_featured', async(request, response) => {
-    getFeatured(request, response);
-})
+router.get("/get_featured", async (request, response) => {
+	getFeatured(request, response);
+});
 /**
  * @swagger
  * /api/item/get_buynow:
@@ -263,9 +266,9 @@ router.get('/get_all', async(request, response) => {
  *               items:
  *                 $ref: '#/components/schemas/Item'
  */
- router.get('/get_buynow', async(request, response) => {
-    getBuyNow(request, response);
-})
+router.get("/get_buynow", async (request, response) => {
+	getBuyNow(request, response);
+});
 
 /**
  * @swagger
@@ -282,9 +285,9 @@ router.get('/get_all', async(request, response) => {
  *               items:
  *                 $ref: '#/components/schemas/Item'
  */
- router.get('/get_sold', async(request, response) => {
-    getSold(request, response);
-})
+router.get("/get_sold", async (request, response) => {
+	getSold(request, response);
+});
 
 /**
  * @swagger
@@ -368,8 +371,8 @@ router.get('/get_all', async(request, response) => {
  *                          example: 'Error Create User, error:'
  */
 
-router.post('/create', async(request, response) => {
-    create(request, response);
+router.post("/create", async (request, response) => {
+	create(request, response);
 });
 
 /**
@@ -393,8 +396,8 @@ router.post('/create', async(request, response) => {
  *                          example: "Data updated Successfuly, id: 8"
  */
 
-router.post('/update', async(request, response) => {
-    update(request, response);
+router.post("/update", async (request, response) => {
+	update(request, response);
 });
 
 module.exports = router;

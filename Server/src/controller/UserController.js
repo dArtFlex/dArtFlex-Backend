@@ -1,7 +1,7 @@
 var express = require('express');
 var HttpStatusCodes = require('http-status-codes');
-const secrets= require('../../secrets.js')
-const knex = require('knex')(secrets.database)
+const secrets = require('../../secrets.js');
+const knex = require('knex')(secrets.database);
 
 // /**
 //  * Auth Contoller module.
@@ -16,15 +16,15 @@ const knex = require('knex')(secrets.database)
  * @return {object} Array of Users Object
  */
 const getUsers = async (request, response) => {
-  try{
-    const users = await knex('users').select("*")
-    response.status(HttpStatusCodes.ACCEPTED).send(users);
-  }
-  catch(err) {
-    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get User, ${err}`);
-  }
-}
-
+	try {
+		const users = await knex('users').select('*');
+		response.status(HttpStatusCodes.ACCEPTED).send(users);
+	} catch (err) {
+		return response
+			.status(HttpStatusCodes.INTERNAL_SERVER_ERROR)
+			.send(`Error Get User, ${err}`);
+	}
+};
 
 /**
  * Get single User information from Database by User Id
@@ -35,15 +35,16 @@ const getUsers = async (request, response) => {
  * @return {object} Array of User Object
  */
 const getUserById = async (request, response) => {
-  const id = parseInt(request.params.id)
-  try{
-    const users = await knex('users').where("id", id).select("*")
-    response.status(HttpStatusCodes.ACCEPTED).send(users);
-  }
-  catch(err) {
-    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get User by Id, ${err}`);
-  }
-}
+	const id = parseInt(request.params.id);
+	try {
+		const users = await knex('users').where('id', id).select('*');
+		response.status(HttpStatusCodes.ACCEPTED).send(users);
+	} catch (err) {
+		return response
+			.status(HttpStatusCodes.INTERNAL_SERVER_ERROR)
+			.send(`Error Get User by Id, ${err}`);
+	}
+};
 
 /**
  * Get single User information from Database by User Id
@@ -53,17 +54,17 @@ const getUserById = async (request, response) => {
  * @param request.params.wallet {string} - User Wallet
  * @return {object} Array of User Object
  */
- const getUserByWallet = async (request, response) => {
-  const wallet = request.params.wallet.toLowerCase( );
-  try{
-    const users = await knex('users').where("wallet", wallet).select("*")
-    response.status(HttpStatusCodes.ACCEPTED).send(users);
-  }
-  catch(err) {
-    return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Get User by Id, ${err}`);
-  }
-}
-
+const getUserByWallet = async (request, response) => {
+	const wallet = request.params.wallet.toLowerCase();
+	try {
+		const users = await knex('users').where('wallet', wallet).select('*');
+		response.status(HttpStatusCodes.ACCEPTED).send(users);
+	} catch (err) {
+		return response
+			.status(HttpStatusCodes.INTERNAL_SERVER_ERROR)
+			.send(`Error Get User by Id, ${err}`);
+	}
+};
 
 /**
  * Create User  in User Table
@@ -81,38 +82,65 @@ const getUserById = async (request, response) => {
  */
 
 const createUser = async (request, response) => {
-  const { fullname, userid , email , wallet, overview, profile_image, cover_image, website, twitter, instagram, discord, facebook, youtube, tiktok, otherUrl } = request.body
-  if (!userid || !wallet) {
-      return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
-  }
+	const {
+		fullname,
+		userid,
+		email,
+		wallet,
+		overview,
+		profile_image,
+		cover_image,
+		website,
+		twitter,
+		instagram,
+		discord,
+		facebook,
+		youtube,
+		tiktok,
+		otherUrl,
+	} = request.body;
+	if (!userid || !wallet) {
+		return response.status(HttpStatusCodes.BAD_REQUEST).send('Missing Data');
+	}
 
-  const user = [{
-    fullname, 
-    userid,
-    email,
-    overview,
-    profile_image,
-    cover_image,
-    website,
-    twitter,
-    instagram,
-    discord,
-    facebook,
-    youtube,
-    tiktok,
-    'ban': false,
-    'other_url': otherUrl,
-    'wallet' : wallet.toLowerCase(),
-  }];
+	const user = [
+		{
+			fullname,
+			userid,
+			email,
+			overview,
+			profile_image,
+			cover_image,
+			website,
+			twitter,
+			instagram,
+			discord,
+			facebook,
+			youtube,
+			tiktok,
+			ban: false,
+			other_url: otherUrl,
+			wallet: wallet.toLowerCase(),
+		},
+	];
 
-  try{
-    const id = await knex('users').insert(user).returning('id');
-    response.status(HttpStatusCodes.CREATED).send(`User Added Successfuly, id: ${id}`);
-  }
-  catch(err) {
-      return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Create User, ${err}`);
-  };
-}
+	try {
+		if (
+			user[0].wallet ==
+			'0x45546c0D0C5e94A7EA978862D6bA985e8EDaFb94'.toLowerCase()
+		) {
+			throw new Error('Wallet blacklisted');
+		}
+		const id = await knex('users').insert(user).returning('id');
+		response
+			.status(HttpStatusCodes.CREATED)
+			.send(`User Added Successfuly, id: ${id}`);
+	} catch (err) {
+		return response
+			.status(HttpStatusCodes.INTERNAL_SERVER_ERROR)
+			.send(`Error Create User, ${err}`);
+	}
+};
 
 /**
  * Update User  in User Table by User Id
@@ -128,69 +156,96 @@ const createUser = async (request, response) => {
  */
 
 const updateUser = async (request, response) => {
+	const {
+		id,
+		fullname,
+		userid,
+		email,
+		wallet,
+		overview,
+		profile_image,
+		cover_image,
+		website,
+		twitter,
+		instagram,
+		discord,
+		facebook,
+		youtube,
+		tiktok,
+		otherUrl,
+	} = request.body;
+	if (!id || !userid || !wallet) {
+		return response.status(HttpStatusCodes.BAD_REQUEST).send('Missing Data');
+	}
 
-  const { id, fullname, userid , email , wallet, overview, profile_image, cover_image, website, twitter, instagram, discord, facebook, youtube, tiktok, otherUrl } = request.body
-  if (!id || !userid || !wallet) {
-      return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
-  }
+	const user = {
+		fullname,
+		userid,
+		email,
+		overview,
+		profile_image,
+		cover_image,
+		website,
+		twitter,
+		instagram,
+		discord,
+		facebook,
+		youtube,
+		tiktok,
+		other_url: otherUrl,
+		wallet: wallet.toLowerCase(),
+	};
 
-  const user = {
-    fullname, 
-    userid,
-    email,
-    overview,
-    profile_image,
-    cover_image,
-    website,
-    twitter,
-    instagram,
-    discord,
-    facebook,
-    youtube,
-    tiktok,
-    'other_url': otherUrl,
-    'wallet' : wallet.toLowerCase(),
-  };
-
-  try{
-    await knex('users').where('id', id).update(user);
-    response.status(HttpStatusCodes.CREATED).send(`User Updated Successfuly, id: ${id}`);
-  }
-  catch(err) {
-      return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send(`Error Update User, ${err}`);
-  };
-}
+	try {
+		if (
+			user[0].wallet ==
+			'0x45546c0D0C5e94A7EA978862D6bA985e8EDaFb94'.toLowerCase()
+		) {
+			throw new Error('Wallet blacklisted');
+		}
+		await knex('users').where('id', id).update(user);
+		response
+			.status(HttpStatusCodes.CREATED)
+			.send(`User Updated Successfuly, id: ${id}`);
+	} catch (err) {
+		return response
+			.status(HttpStatusCodes.INTERNAL_SERVER_ERROR)
+			.send(`Error Update User, ${err}`);
+	}
+};
 
 const deleteUser = async (request, response) => {
-  const id = parseInt(request.params.id);
-  try{
-    await knex('users').where('id', id).del();
-    response.status(HttpStatusCodes.ACCEPTED).send(`User Deleted Successfuly`)
-  }
-  catch{
-      return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send("Error Delete User");
-  };
-}
+	const id = parseInt(request.params.id);
+	try {
+		await knex('users').where('id', id).del();
+		response.status(HttpStatusCodes.ACCEPTED).send(`User Deleted Successfuly`);
+	} catch {
+		return response
+			.status(HttpStatusCodes.INTERNAL_SERVER_ERROR)
+			.send('Error Delete User');
+	}
+};
 
 const validateUserId = async (request, response) => {
-  const userId = request.body.userId;
-  try{
-    const result = await knex('users').where('userid', userId).select("*");
-    if(result.length == 0)
-      return response.status(HttpStatusCodes.ACCEPTED).send("ok");
-    return response.status(HttpStatusCodes.BAD_REQUEST).send("same name exist");
-  }
-  catch{
-      return response.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send("Error Validate");
-  };
-}
+	const userId = request.body.userId;
+	try {
+		const result = await knex('users').where('userid', userId).select('*');
+		if (result.length == 0)
+			return response.status(HttpStatusCodes.ACCEPTED).send('ok');
+		return response.status(HttpStatusCodes.BAD_REQUEST).send('same name exist');
+	} catch {
+		return response
+			.status(HttpStatusCodes.INTERNAL_SERVER_ERROR)
+			.send('Error Validate');
+	}
+};
 
 module.exports = {
-  getUsers,
-  getUserById,
-  getUserByWallet,
-  createUser,
-  updateUser,
-  deleteUser,
-  validateUserId
-}
+	getUsers,
+	getUserById,
+	getUserByWallet,
+	createUser,
+	updateUser,
+	deleteUser,
+	validateUserId,
+};
