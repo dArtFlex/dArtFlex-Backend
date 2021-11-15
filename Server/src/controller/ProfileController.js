@@ -39,7 +39,10 @@ const fillItems = async (items) => {
 
 const getProfile = async (request, response) => {
 	try {
-		let { wallet, filter } = request.query;
+		let { wallet, filter, chain_id, search, offset, limit, order } =
+			request.query;
+
+		if (!order) order = "DESC";
 
 		if (!wallet) {
 			response
@@ -59,7 +62,7 @@ const getProfile = async (request, response) => {
 			return;
 		}
 
-		let user = users[0];
+		const user = users[0];
 
 		// All user items where user are creator or owner
 		let userItems = await knex("item")
@@ -67,6 +70,29 @@ const getProfile = async (request, response) => {
 			.orWhere({ owner: user.id })
 			.select("*")
 			.then(fillItems);
+
+		// chain_id and search filters
+		if (chain_id) {
+			userItems = userItems.filter((item) => item.chain_id == chain_id);
+		}
+		if (search) {
+			const match = (value) => {
+				if (String(value) == undefined || String(value) == null) {
+					return null;
+				}
+				return String(value).match(new RegExp(search, "gi"));
+			};
+
+			userItems = userItems.filter((item) => {
+				if (
+					match(item?.metadata?.name) ||
+					match(user?.id) ||
+					match(user?.wallet)
+				) {
+					return true;
+				}
+			});
+		}
 
 		switch (filter) {
 			case "in_wallet":
@@ -76,8 +102,6 @@ const getProfile = async (request, response) => {
 					}
 				});
 				user["items"] = userItems;
-				response.status(HttpStatusCodes.ACCEPTED).send(user);
-				return;
 				break;
 
 			case "created":
@@ -90,8 +114,6 @@ const getProfile = async (request, response) => {
 					}
 				});
 				user["items"] = createdItems;
-				response.status(HttpStatusCodes.ACCEPTED).send(user);
-				return;
 				break;
 			case "collected":
 				let collectedItems = userItems.filter((item) => {
@@ -100,8 +122,6 @@ const getProfile = async (request, response) => {
 					}
 				});
 				user["items"] = collectedItems;
-				response.status(HttpStatusCodes.ACCEPTED).send(user);
-				return;
 				break;
 			case "sold":
 				// This cant return sold item if it not created and owned by user
@@ -124,16 +144,34 @@ const getProfile = async (request, response) => {
 					.select("*")
 					.then(fillItems);
 				user["items"] = soldItems;
-				response.status(HttpStatusCodes.ACCEPTED).send(user);
-				return;
 				break;
 			default:
 				user["items"] = userItems;
-				response.status(HttpStatusCodes.ACCEPTED).send(user);
-				return;
 				break;
 		}
+
+		// Pagination
+
+		if (order == "DESC") {
+			user["items"] = user["items"].sort((a, b) => (a.id < b.id ? 1 : -1));
+		}
+		if (order == "ASC") {
+			user["items"] = user["items"].sort((a, b) => (a.id < b.id ? -1 : 1));
+		}
+
+		if (offset || limit) {
+			_offset = offset ? offset : 0;
+			_limit = limit ? limit : user["items"].length;
+
+			let _start = parseInt(_offset);
+			let _end = parseInt(_offset + _limit);
+
+			user["items"] = user["items"].slice(_start, _end);
+		}
+
+		response.status(HttpStatusCodes.ACCEPTED).send(user);
 	} catch (err) {
+		console.log(err);
 		return response
 			.status(HttpStatusCodes.INTERNAL_SERVER_ERROR)
 			.send(`Error Get item by token Id, ${err}`);
