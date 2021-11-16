@@ -71,7 +71,7 @@ const createImage = async (request, response) => {
 
 	if (userId) {
 		await knex("users")
-			.where("wallet", userId)
+			.where("userid", userId)
 			.update({ task_id: result.data.task_id });
 	}
 
