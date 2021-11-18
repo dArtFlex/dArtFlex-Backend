@@ -69,10 +69,9 @@ const createImage = async (request, response) => {
 		},
 	});
 
-	console.log("userId", userId);
 	if (userId) {
 		await knex("users")
-			.where("id", parseInt(userId))
+			.where("userid", userId)
 			.update({ task_id: result.data.task_id });
 	}
 
