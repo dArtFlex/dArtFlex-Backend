@@ -106,6 +106,9 @@ const getItem = async (request, response) => {
 				var user = [];
 				if (bid.length > 0) {
 					user = await knex("users").where("id", bid[0]["user_id"]);
+				} else {
+					user = await knex("users")
+						.where('users.id', item.owner);
 				}
 
 				item["hashtag"] = hashtag || null;
