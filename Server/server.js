@@ -6,6 +6,7 @@ if (process.env.NODE_ENV == "development") {
 
 var url = require("url");
 const express = require("express");
+const responseTime = require("response-time");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const fileupload = require("express-fileupload");
@@ -39,6 +40,13 @@ var RouterActivity = require("./src/router/Activity");
 var RouterTokenPrice = require("./src/router/TokenPrice");
 var RouterSuperAdmin = require("./src/router/SuperAdmin");
 var RouterProfile = require("./src/router/Profile");
+var RouterTradeHistory = require("./src/router/TradeHistory");
+var RouterBidsAndOffers = require("./src/router/BidsAndOffers");
+var RouterSales = require("./src/router/Sales");
+var RouterManagement = require("./src/router/Management");
+
+var loggerMiddleware = require("./src/utilities/logger-middleware");
+var logger = require("./src/utilities/logger");
 
 var { watchEtherTransfers } = require("./src/controller/SubscribeController");
 var {
@@ -48,7 +56,7 @@ var {
 var { checkMarket } = require("./src/controller/MarketplaceController");
 var { updateTokenPrice } = require("./src/controller/TokenPriceController");
 const { request } = require("express");
-server.listen(port, () => console.log(`Listening on port ${port}...`));
+server.listen(port, () => logger.info(`Listening on port ${port}`));
 
 const options = {
 	definition: {
@@ -107,6 +115,12 @@ app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(cors());
 app.use(fileupload());
 
+app.use(
+	responseTime(function (res, res, time) {
+		res.responseTime = time;
+	})
+);
+
 app.use((req, res, next) => {
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, PATCH");
@@ -117,28 +131,7 @@ app.use((req, res, next) => {
 	next();
 });
 
-function isEmpty(obj) {
-	return Object.keys(obj).length === 0;
-}
-function fullUrl(req) {
-	return url.format({
-		protocol: req.protocol,
-		host: req.get("host"),
-		pathname: req.originalUrl,
-	});
-}
-app.use((req, res, next) => {
-	if (!process.env.NODE_ENV || process.env.NODE_ENV == "development") {
-		console.log(fullUrl(req));
-		if (!isEmpty(req.params)) {
-			console.log("PARAMS:", JSON.stringify(req.params, false, 2));
-		}
-		if (!isEmpty(req.body)) {
-			console.log("BODY:", JSON.stringify(req.body, false, 2));
-		}
-	}
-	next();
-});
+app.use(loggerMiddleware);
 app.use("/api/image", RouterImage);
 app.use("/api/album", RouterAlbum);
 app.use("/api/user", RouterUser);
@@ -154,6 +147,11 @@ app.use("/api/activity", RouterActivity);
 app.use("/api/token_price", RouterTokenPrice);
 app.use("/api/super_admin", RouterSuperAdmin);
 app.use("/api/profile", RouterProfile);
+app.use("/api/trade-history", RouterTradeHistory);
+app.use("/api/bids-and-offers", RouterBidsAndOffers);
+app.use("/api/sales", RouterSales);
+app.use("/api/management", RouterManagement);
+
 app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
 
 //watchEtherTransfers();
@@ -163,3 +161,9 @@ cron.schedule("* * * * *", function () {
 	updateTokenPrice();
 });
 checkMarket();
+
+// process.on("unhandledRejection", (reason, p) => {
+// 	console.log(reason);
+// 	logger.error("exception occur");
+// 	//throw reason;
+// });

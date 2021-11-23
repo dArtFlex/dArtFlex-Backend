@@ -77,7 +77,6 @@ const createImage = async (request, response) => {
 
 	setTimeout(
 		async (result, writer, tmpFileName) => {
-			console.log(path);
 			const image = await axios({
 				method: "GET",
 				responseType: "stream",

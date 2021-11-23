@@ -3,6 +3,7 @@ build/
 tests/
 .idea/
 .vscode/
+logs/
 
 secrets.js
 .env

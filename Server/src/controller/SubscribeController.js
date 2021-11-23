@@ -1,25 +1,26 @@
-const Web3 = require('web3');
-const secrets = require('../../secrets.js');
-const knex = require('knex')(secrets.database);
+const Web3 = require("web3");
+const secrets = require("../../secrets.js");
+const knex = require("knex")(secrets.database);
+const logger = require("../utilities/logger");
 
 const web3 = new Web3(
-	new Web3.providers.WebsocketProvider('wss://bsc-ws-node.nariox.org:443')
+	new Web3.providers.WebsocketProvider("wss://bsc-ws-node.nariox.org:443")
 );
 
 async function watchEtherTransfers() {
-	const topic = web3.utils.keccak256('Transfer(address,address,uint256)');
+	const topic = web3.utils.keccak256("Transfer(address,address,uint256)");
 	web3.eth.subscribe(
-		'logs',
+		"logs",
 		{
-			address: '0xc673958b3E599C06D650e09DDAD533b30cF5FbEF',
+			address: "0xc673958b3E599C06D650e09DDAD533b30cF5FbEF",
 		},
 		function (error, result) {
 			if (error) {
-				console.log(error);
+				logger.error(error.stack || error.message);
 			}
 			if (!error && result.topics[0].toLowerCase() == topic) {
-				const from = '0x' + result.topics[1].toLowerCase().slice(26, 66);
-				const to = '0x' + result.topics[2].toLowerCase().slice(26, 66);
+				const from = "0x" + result.topics[1].toLowerCase().slice(26, 66);
+				const to = "0x" + result.topics[2].toLowerCase().slice(26, 66);
 				const tokenId = web3.utils
 					.toBN(result.topics[3].toLowerCase())
 					.toString();
@@ -30,15 +31,15 @@ async function watchEtherTransfers() {
 }
 
 async function updateDB(_from, _to, tokenId) {
-	const from = await knex('users')
-		.where('wallet', _from.toLowerCase())
-		.select('*');
-	const to = await knex('users').where('wallet', _to.toLowerCase()).select('*');
+	const from = await knex("users")
+		.where("wallet", _from.toLowerCase())
+		.select("*");
+	const to = await knex("users").where("wallet", _to.toLowerCase()).select("*");
 	let id;
 	if (!to.length) {
 		const user = [
 			{
-				fullname: 'Anonymous',
+				fullname: "Anonymous",
 				userid: _to.toLowerCase(),
 				email: _to.toLowerCase(),
 				ban: false,
@@ -47,18 +48,18 @@ async function updateDB(_from, _to, tokenId) {
 		];
 
 		try {
-			id = await knex('users').insert(user).returning('id');
+			id = await knex("users").insert(user).returning("id");
 		} catch (err) {
-			console.log(err);
+			logger.error(err.stack || err.message);
 			return;
 		}
 	} else {
 		id = to[0].id;
 	}
-	const item = await knex('item').where('token_id', tokenId).select('*');
+	const item = await knex("item").where("token_id", tokenId).select("*");
 	if (item.length) {
-		await knex('item')
-			.where('token_id', tokenId)
+		await knex("item")
+			.where("token_id", tokenId)
 			.update({ owner: id, lazymint: false });
 	}
 }

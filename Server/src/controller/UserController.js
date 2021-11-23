@@ -1,7 +1,7 @@
-var express = require('express');
-var HttpStatusCodes = require('http-status-codes');
-const secrets = require('../../secrets.js');
-const knex = require('knex')(secrets.database);
+var express = require("express");
+var HttpStatusCodes = require("http-status-codes");
+const secrets = require("../../secrets.js");
+const knex = require("knex")(secrets.database);
 
 // /**
 //  * Auth Contoller module.
@@ -17,7 +17,7 @@ const knex = require('knex')(secrets.database);
  */
 const getUsers = async (request, response) => {
 	try {
-		const users = await knex('users').select('*');
+		const users = await knex("users").select("*");
 		response.status(HttpStatusCodes.ACCEPTED).send(users);
 	} catch (err) {
 		return response
@@ -37,7 +37,7 @@ const getUsers = async (request, response) => {
 const getUserById = async (request, response) => {
 	const id = parseInt(request.params.id);
 	try {
-		const users = await knex('users').where('id', id).select('*');
+		const users = await knex("users").where("id", id).select("*");
 		response.status(HttpStatusCodes.ACCEPTED).send(users);
 	} catch (err) {
 		return response
@@ -57,7 +57,7 @@ const getUserById = async (request, response) => {
 const getUserByWallet = async (request, response) => {
 	const wallet = request.params.wallet.toLowerCase();
 	try {
-		const users = await knex('users').where('wallet', wallet).select('*');
+		const users = await knex("users").where("wallet", wallet).select("*");
 		response.status(HttpStatusCodes.ACCEPTED).send(users);
 	} catch (err) {
 		return response
@@ -100,7 +100,7 @@ const createUser = async (request, response) => {
 		otherUrl,
 	} = request.body;
 	if (!userid || !wallet) {
-		return response.status(HttpStatusCodes.BAD_REQUEST).send('Missing Data');
+		return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
 	}
 
 	const user = [
@@ -127,11 +127,11 @@ const createUser = async (request, response) => {
 	try {
 		if (
 			user[0].wallet ==
-			'0x45546c0D0C5e94A7EA978862D6bA985e8EDaFb94'.toLowerCase()
+			"0x45546c0D0C5e94A7EA978862D6bA985e8EDaFb94".toLowerCase()
 		) {
-			throw new Error('Wallet blacklisted');
+			throw new Error("Wallet blacklisted");
 		}
-		const id = await knex('users').insert(user).returning('id');
+		const id = await knex("users").insert(user).returning("id");
 		response
 			.status(HttpStatusCodes.CREATED)
 			.send(`User Added Successfuly, id: ${id}`);
@@ -175,7 +175,7 @@ const updateUser = async (request, response) => {
 		otherUrl,
 	} = request.body;
 	if (!id || !userid || !wallet) {
-		return response.status(HttpStatusCodes.BAD_REQUEST).send('Missing Data');
+		return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
 	}
 
 	const user = {
@@ -198,12 +198,11 @@ const updateUser = async (request, response) => {
 
 	try {
 		if (
-			user[0].wallet ==
-			'0x45546c0D0C5e94A7EA978862D6bA985e8EDaFb94'.toLowerCase()
+			user.wallet == "0x45546c0D0C5e94A7EA978862D6bA985e8EDaFb94".toLowerCase()
 		) {
-			throw new Error('Wallet blacklisted');
+			throw new Error("Wallet blacklisted");
 		}
-		await knex('users').where('id', id).update(user);
+		await knex("users").where("id", id).update(user);
 		response
 			.status(HttpStatusCodes.CREATED)
 			.send(`User Updated Successfuly, id: ${id}`);
@@ -217,26 +216,26 @@ const updateUser = async (request, response) => {
 const deleteUser = async (request, response) => {
 	const id = parseInt(request.params.id);
 	try {
-		await knex('users').where('id', id).del();
+		await knex("users").where("id", id).del();
 		response.status(HttpStatusCodes.ACCEPTED).send(`User Deleted Successfuly`);
 	} catch {
 		return response
 			.status(HttpStatusCodes.INTERNAL_SERVER_ERROR)
-			.send('Error Delete User');
+			.send("Error Delete User");
 	}
 };
 
 const validateUserId = async (request, response) => {
 	const userId = request.body.userId;
 	try {
-		const result = await knex('users').where('userid', userId).select('*');
+		const result = await knex("users").where("userid", userId).select("*");
 		if (result.length == 0)
-			return response.status(HttpStatusCodes.ACCEPTED).send('ok');
-		return response.status(HttpStatusCodes.BAD_REQUEST).send('same name exist');
+			return response.status(HttpStatusCodes.ACCEPTED).send("ok");
+		return response.status(HttpStatusCodes.BAD_REQUEST).send("same name exist");
 	} catch {
 		return response
 			.status(HttpStatusCodes.INTERNAL_SERVER_ERROR)
-			.send('Error Validate');
+			.send("Error Validate");
 	}
 };
 

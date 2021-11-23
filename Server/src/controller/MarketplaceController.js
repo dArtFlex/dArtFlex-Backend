@@ -4,7 +4,7 @@ var HttpStatusCodes = require("http-status-codes");
 const secrets = require("../../secrets.js");
 const { getNotificationById } = require("./NotificationController");
 const knex = require("knex")(secrets.database);
-
+const logger = require("../utilities/logger");
 function getCurrentTime() {
 	const d = new Date();
 	const n = d.getTime();
@@ -73,7 +73,6 @@ const checkMarket = async () => {
 						.where("market_id", market.id)
 						.andWhere("status", "listed")
 						.select("*");
-					console.log("creatorData", creatorData);
 					await knex("bid")
 						.where("market_id", market.id)
 						.andWhere("status", "listed")
@@ -127,7 +126,7 @@ const checkMarket = async () => {
 		});
 		return true;
 	} catch (err) {
-		console.log(err);
+		logger.error(err.stack || err.mesage);
 	}
 };
 

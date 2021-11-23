@@ -97,7 +97,6 @@ const nftEncodeParameters = ["address", "uint256"];
 const erc20EncodeParameters = ["address"];
 
 async function signTypedData(from, data) {
-	console.log("from", from);
 	if (web3.currentProvider.isMetaMask) {
 		function cb(err, result) {
 			if (err) {
@@ -131,7 +130,6 @@ async function signTypedData(from, data) {
 			cb
 		);
 	} else {
-		console.log(web3.currentProvider);
 		return signTypedData_v4(
 			web3.currentProvider.wallets[from.toLowerCase()].privateKey,
 			{ data }
@@ -169,7 +167,6 @@ const generateLazyMint = async (request, response) => {
 	}
 
 	const tokenId = await generateTokenId(creator);
-	console.log(tokenId);
 	const form = {
 		"@type": "ERC1155",
 		contract: contract,
@@ -190,10 +187,7 @@ const generateLazyMint = async (request, response) => {
 		{ ...form, tokenURI: uri },
 		ERC1155Types
 	);
-	console.log(creator, data);
 	const signature = await signTypedData(creator, data);
-	//   console.log(form);
-	console.log(signature);
 	return response.send({ ...form, signatures: [signature] });
 };
 

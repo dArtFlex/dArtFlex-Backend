@@ -1,6 +1,7 @@
 var HttpStatusCodes = require("http-status-codes");
 const secrets = require("../../secrets.js");
 const knex = require("knex")(secrets.database);
+const logger = require("../utilities/logger");
 
 const fillItems = async (items) => {
 	return await Promise.all(
@@ -171,7 +172,7 @@ const getProfile = async (request, response) => {
 
 		response.status(HttpStatusCodes.ACCEPTED).send(user);
 	} catch (err) {
-		console.log(err);
+		logger.error(err.stack || err.message);
 		return response
 			.status(HttpStatusCodes.INTERNAL_SERVER_ERROR)
 			.send(`Error Get item by token Id, ${err}`);
