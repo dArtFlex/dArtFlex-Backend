@@ -126,8 +126,7 @@ const createUser = async (request, response) => {
 
 	try {
 		if (
-			user[0].wallet ==
-			"0x45546c0D0C5e94A7EA978862D6bA985e8EDaFb94".toLowerCase()
+			user.wallet == "0x45546c0D0C5e94A7EA978862D6bA985e8EDaFb94".toLowerCase()
 		) {
 			throw new Error("Wallet blacklisted");
 		}
