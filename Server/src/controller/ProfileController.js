@@ -40,7 +40,7 @@ const fillItems = async (items) => {
 
 const getProfile = async (request, response) => {
 	try {
-		let { wallet, filter, chain_id, search, offset, limit, order } =
+		let { wallet, filter, chain_ids, search, offset, limit, order } =
 			request.query;
 
 		if (!order) order = "DESC";
@@ -72,9 +72,11 @@ const getProfile = async (request, response) => {
 			.select("*")
 			.then(fillItems);
 
-		// chain_id and search filters
-		if (chain_id) {
-			userItems = userItems.filter((item) => item.chain_id == chain_id);
+		// chain_ids and search filters
+		if (chain_ids) {
+			userItems = userItems.filter((item) =>
+				chain_ids.includes(String(item.chain_id))
+			);
 		}
 		if (search) {
 			const match = (value) => {
