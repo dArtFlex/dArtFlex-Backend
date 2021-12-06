@@ -104,7 +104,7 @@ const getProfile = async (request, response) => {
 						return true;
 					}
 				});
-				user["items"] = userItems;
+				user["items"] = inWalletItems;
 				break;
 
 			case "created":

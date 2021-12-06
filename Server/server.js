@@ -162,8 +162,4 @@ cron.schedule("* * * * *", function () {
 });
 checkMarket();
 
-// process.on("unhandledRejection", (reason, p) => {
-// 	console.log(reason);
-// 	logger.error("exception occur");
-// 	//throw reason;
-// });
+require("./src/blockchain/listener")(io);

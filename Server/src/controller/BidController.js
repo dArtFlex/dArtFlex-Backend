@@ -3,6 +3,7 @@ var HttpStatusCodes = require("http-status-codes");
 var secrets = require("../../secrets.js");
 var knex = require("knex")(secrets.database);
 const BN = require("bn.js");
+const logger = require("../utilities/logger");
 
 const { getNotificationById } = require("./NotificationController");
 
@@ -596,7 +597,79 @@ const withdrawOffer = async (request, response) => {
 	}
 };
 
+const acceptBidService = async (_data) => {
+	const { id, sellerId, txHash } = _data;
+	if (!id) {
+		throw new Error("Missing Data");
+	}
+
+	try {
+		const data = await knex("bid")
+			.where("id", id)
+			.update({ status: "accepted" })
+			.returning("*");
+		await knex("marketplace")
+			.where("id", parseInt(data[0]["market_id"]))
+			.update({ sold: true, current_price: data[0]["bid_amount"] });
+		const buyer = await knex("bid").where("id", id).select("*");
+		// const sellerId = await knex('item').where('id', parseInt(buyer[0]['item_id'])).returning('*');
+		await knex("item")
+			.where("id", buyer[0]["item_id"])
+			.update({ owner: buyer[0]["user_id"], lazymint: false });
+		await knex("promotion").where("item_id", buyer[0]["item_id"]).del();
+
+		await knex("activity")
+			.insert({
+				from: sellerId,
+				to: buyer[0]["user_id"],
+				item_id: data[0]["item_id"],
+				market_id: data[0]["market_id"],
+				order_id: data[0]["order_id"],
+				bid_id: id,
+				bid_amount: data[0]["bid_amount"],
+				sales_token_contract: "0x",
+				tx_hash: txHash,
+				status: "sold",
+			})
+			.returning("id");
+
+		await knex("activity")
+			.insert({
+				from: buyer[0]["user_id"],
+				to: sellerId,
+				item_id: data[0]["item_id"],
+				market_id: data[0]["market_id"],
+				order_id: data[0]["order_id"],
+				bid_id: id,
+				bid_amount: data[0]["bid_amount"],
+				sales_token_contract: "0x",
+				tx_hash: txHash,
+				status: "purchased",
+			})
+			.returning("id");
+
+		const noticeId = await knex("notification")
+			.insert({
+				user_id: parseInt(buyer[0]["user_id"]),
+				item_id: parseInt(buyer[0]["item_id"]),
+				message: "Congratulations on your successful purchase!",
+				read: false,
+			})
+			.returning("id");
+		const noticeData = await getNotificationById(noticeId[0]);
+
+		return noticeData;
+	} catch (err) {
+		logger.error(`Error accept bid, ${err.stack}`);
+	}
+};
+
 const acceptBid = async (request, response) => {
+	// TODO
+	return await response
+		.status(HttpStatusCodes.CREATED)
+		.send(`accept bid successfuly`);
+
 	const keys = request.io.sockets.sockets.keys();
 	const { id, sellerId, txHash } = request.body;
 	if (!id) {
@@ -674,7 +747,83 @@ const acceptBid = async (request, response) => {
 	}
 };
 
+const acceptOfferService = async (_data) => {
+	const { id, sellerId, txHash } = _data;
+	if (!id) {
+		throw new Error("Missing Data");
+	}
+
+	try {
+		const buyer = await knex("bid")
+			.where("id", id)
+			.update({ status: "accepted" })
+			.returning("*");
+		await knex("bid")
+			.where("item_id", buyer[0]["item_id"])
+			.andWhere("status", "canceled offer")
+			.del();
+
+		// const sellerId = await knex('item').where('id', parseInt(buyer[0]['item_id'])).returning('*');
+		await knex("item")
+			.where("id", buyer[0]["item_id"])
+			.update({ owner: buyer[0]["user_id"], lazymint: false });
+		await knex("promotion").where("item_id", buyer[0]["item_id"]).del();
+
+		await knex("activity")
+			.insert({
+				from: sellerId,
+				to: buyer[0]["user_id"],
+				item_id: buyer[0]["item_id"],
+				market_id: buyer[0]["market_id"],
+				order_id: buyer[0]["order_id"],
+				bid_id: id,
+				bid_amount: buyer[0]["bid_amount"],
+				sales_token_contract: "0x",
+				tx_hash: txHash,
+				status: "sold",
+			})
+			.returning("id");
+
+		await knex("activity")
+			.insert({
+				from: buyer[0]["user_id"],
+				to: sellerId,
+				item_id: buyer[0]["item_id"],
+				market_id: buyer[0]["market_id"],
+				order_id: buyer[0]["order_id"],
+				bid_id: id,
+				bid_amount: buyer[0]["bid_amount"],
+				sales_token_contract: "0x",
+				tx_hash: txHash,
+				status: "purchased",
+			})
+			.returning("id");
+
+		const noticeId = await knex("notification")
+			.insert({
+				user_id: parseInt(buyer[0]["user_id"]),
+				item_id: parseInt(buyer[0]["item_id"]),
+				message: "Congratulations on your successful purchase!",
+				read: false,
+			})
+			.returning("id");
+		const noticeData = await getNotificationById(noticeId[0]);
+		for (var key of keys) {
+			socket = request.io.sockets.sockets.get(key);
+			if (socket.handshake.query.userId == parseInt(buyer[0]["user_id"]))
+				socket.emit("notification", noticeData);
+		}
+
+		return noticeData;
+	} catch (err) {
+		logger.error(`Error accept bid, ${err}`);
+	}
+};
+
 const acceptOffer = async (request, response) => {
+	// TODO
+	return await response.status(444).send(`Interrupt endpoint connection`);
+
 	const keys = request.io.sockets.sockets.keys();
 	const { id, sellerId, txHash } = request.body;
 	if (!id) {
@@ -817,10 +966,97 @@ const claimNFT = async (request, response) => {
 	}
 };
 
+const buyNowService = async (_data) => {
+	const { orderId, itemId, userId, sellerId, marketId, bidAmount, txHash } =
+		_data;
+
+	if (!orderId || !itemId || !userId || !marketId || !bidAmount) {
+		throw new Error("Missing Data");
+	}
+
+	const result = await knex("marketplace").where("id", marketId).select("*");
+	if (result.length == 0) throw new Error("marketplace id is invalid");
+	else {
+		if (result[0].sold) throw new Error("item is already sold");
+		else {
+			const startPrice = new BN(result[0]["start_price"]);
+			const _bidAmount = new BN(bidAmount);
+			if (!startPrice.eq(_bidAmount)) throw new Error("invalid bid amount");
+		}
+
+		const data = {
+			item_id: itemId,
+			order_id: orderId,
+			user_id: userId,
+			bid_amount: bidAmount,
+			market_id: marketId,
+			status: "accepted",
+		};
+
+		try {
+			const id = await knex("bid").insert(data).returning("id");
+			// const seller = await knex('item').where('id', parseInt(itemId)).returning('*');
+			await knex("marketplace")
+				.where("id", parseInt(marketId))
+				.update({ sold: true, current_price: bidAmount });
+			await knex("item")
+				.where("id", itemId)
+				.update({ owner: userId, lazymint: false });
+			await knex("promotion").where("item_id", itemId).del();
+
+			await knex("activity")
+				.insert({
+					from: sellerId,
+					to: userId,
+					item_id: itemId,
+					market_id: marketId,
+					order_id: orderId,
+					bid_id: id[0],
+					bid_amount: bidAmount,
+					sales_token_contract: "0x",
+					tx_hash: txHash,
+					status: "sold",
+				})
+				.returning("id");
+
+			await knex("activity")
+				.insert({
+					from: userId,
+					to: sellerId,
+					item_id: itemId,
+					market_id: marketId,
+					order_id: orderId,
+					bid_id: id[0],
+					bid_amount: bidAmount,
+					sales_token_contract: "0x",
+					tx_hash: txHash,
+					status: "purchased",
+				})
+				.returning("id");
+
+			const noticeId = await knex("notification")
+				.insert({
+					user_id: parseInt(sellerId),
+					item_id: parseInt(itemId),
+					message: "Item was sold",
+					read: false,
+				})
+				.returning("id");
+			const noticeData = await getNotificationById(noticeId[0]);
+
+			return noticeData;
+		} catch (err) {
+			logger.error(`Error Buy now error, ${err.stack}`);
+		}
+	}
+};
 const buyNow = async (request, response) => {
+	// TODO
+	return await response.status(444).send(`Interrupt endpoint connection`);
 	const keys = request.io.sockets.sockets.keys();
 	const { orderId, itemId, userId, sellerId, marketId, bidAmount, txHash } =
 		request.body;
+
 	if (!orderId || !itemId || !userId || !marketId || !bidAmount) {
 		return response.status(HttpStatusCodes.BAD_REQUEST).send("Missing Data");
 	}
@@ -931,8 +1167,11 @@ module.exports = {
 	withdrawBid,
 	withdrawOffer,
 	acceptBid,
+	acceptBidService,
 	acceptOffer,
+	acceptOfferService,
 	buyNow,
+	buyNowService,
 	claimNFT,
 	changePrice,
 };

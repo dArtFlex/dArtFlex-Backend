@@ -46,7 +46,6 @@ const formatParams = (request) => {
 		}
 	}
 
-	console.log(params.sold);
 	if (params.sold && (params.sold == "false" || params.sold == "true")) {
 		if (params.sold == "true") {
 			_params.sold = true;
@@ -317,7 +316,6 @@ const getItem = async (request, response) => {
 		let data = result.slice(params.offset, params.offset + params.limit);
 		response.status(HttpStatusCodes.ACCEPTED).send(data);
 	} catch (err) {
-		console.log(err);
 		return response
 			.status(HttpStatusCodes.INTERNAL_SERVER_ERROR)
 			.send(`Request failed`);
@@ -342,7 +340,6 @@ const getById = async (request, response) => {
 			.orderBy("created_at", "DESC")
 			.offset(offset)
 			.limit(limit);
-		// console.log("items", items);
 		let data = [];
 		data = await Promise.all(
 			items.map(async (item) => {
@@ -365,7 +362,6 @@ const getById = async (request, response) => {
 			})
 		);
 
-		//console.log("item getById", data);
 		response.status(HttpStatusCodes.ACCEPTED).send(data);
 	} catch (err) {
 		return response
@@ -1060,7 +1056,6 @@ const getAll = async (request, response) => {
 				return item;
 			})
 		);
-		// console.log("item getAll", JSON.stringify(data, false, 2));
 		response.status(HttpStatusCodes.ACCEPTED).send(data);
 	} catch (err) {
 		return response
@@ -1070,7 +1065,6 @@ const getAll = async (request, response) => {
 };
 
 const create = async (request, response) => {
-	// console.log(request.io.sockets.sockets)
 	const {
 		contract,
 		tokenId,
@@ -1104,7 +1098,6 @@ const create = async (request, response) => {
 
 	try {
 		const id = await knex("item").insert(data).returning("id");
-		console.log("created item id:", id);
 
 		await Promise.all(
 			hashtagIdList.map(async (hashId) => {
@@ -1133,7 +1126,6 @@ const create = async (request, response) => {
 			.status(HttpStatusCodes.CREATED)
 			.send(`Data Added Successfuly, id: ${id}`);
 	} catch (err) {
-		console.log(err);
 		return response
 			.status(HttpStatusCodes.INTERNAL_SERVER_ERROR)
 			.send(`Error Create User, ${err}`);
@@ -1168,7 +1160,6 @@ const update = async (request, response) => {
 		lazymint,
 		signature,
 	};
-	console.log(data);
 	try {
 		await knex("item").where("id", id).update(data);
 		response.status(HttpStatusCodes.CREATED).send(`Data Updated Successfuly`);
